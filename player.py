@@ -5,13 +5,15 @@ from maps import ls_obstacles
 
 
 class Player:
+    radius = 10
+
     def __init__(self, pos, col_fn):
         self.collision_call = col_fn
         self.x = pos[0]
         self.y = pos[1]
-        self.width = 10
-        self.height = 10
-        self.texture = pygame.Surface((10, 10))
+        self.width = 5
+        self.height = 5
+        self.texture = pygame.Surface([self.radius * 2] * 2)
         self.texture.set_colorkey('black')
         self.particle_time = 20
         self.paint()
@@ -21,7 +23,7 @@ class Player:
         return pygame.rect.Rect(self.x, self.y, self.width, self.height)
 
     def paint(self):
-        pygame.draw.circle(self.texture, 'red', (5, 5), 5)
+        pygame.draw.circle(self.texture, 'red', (self.radius, self.radius), self.radius)
 
     def move(self, x, y):
         self.x += x
@@ -73,4 +75,4 @@ class Player:
         x, y = converters.mum_convert(*self.get_coords())
         off_x = self.texture.get_width() // 2
         off_y = self.texture.get_height()
-        surf.blit(self.texture, (x - camera_x - off_x, y - camera_y - off_y))
+        surf.blit(self.texture, (x - camera_x - off_x, y - camera_y - off_y + 2))
