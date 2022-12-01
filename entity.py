@@ -1,22 +1,64 @@
-from numpy import array
 import pygame
-# from converters import convert
-import converters
+from abc import ABC
+from move import Move
 
 
-class Entity:
-    def __init__(self, pos=(100, 100)):
-        self.pos = pos
-        self.rect = pygame.rect.Rect(*pos, 40, 40)
-        self.texture = pygame.Surface((40, 40))
-        self.paint()
+class Entity(ABC):
+    def __init__(self, pos, hitbox_size, image):
+        self.x = pos[0]
+        self.y = pos[1]
+        self.hitbox_size = hitbox_size
+        self.image = image
+        self.move_q: list[Move] = []
 
-    def paint(self):
-        pygame.draw.circle(self.texture, 'yellow', (20, 20), 20)
+    @property
+    def rect(self):
+        return pygame.rect.Rect(self.x, self.y, self.hitbox_size, self.hitbox_size)
 
-    def render(self, surf: pygame.Surface, camera_x, camera_y):
-        # x, y = mum_convert(self.rect.x, self.rect.y)
-        # x, y = (int(i) for i in convert(array((self.rect.x - player_x, self.rect.y - player_y), dtype='f4')))
-        x, y = converters.mum_convert(self.rect.x, self.rect.y)
-        off_x = self.texture.get_width() // 2
-        surf.blit(self.texture, (x - camera_x - off_x, y - camera_y))
+    def move_coords(self, x, y, dur=1):
+        self.move_q.append(Move(x, y, dur))
+
+    def move_move(self, move: Move):
+        self.move_q.append(move)
+
+    def _move_x(self, dx, map_):
+        if not dx:
+            return
+        self.x += dx
+        rect = self.rect
+        for obj in map_:
+            r = obj.rect
+            if rect.colliderect(r):
+                if dx > 0:
+                    rect.right = r.left
+                else:
+                    rect.left = r.right
+                self.x = rect.x
+
+    def _move_y(self, dy, map_):
+        if not dy:
+            return
+        self.y += dy
+        rect = self.rect
+        for obj in map_:
+            r = obj.rect
+            if rect.colliderect(r):
+                if dy > 0:
+                    rect.bottom = r.top
+                else:
+                    rect.top = r.bottom
+                self.y = rect.y
+
+    def get_coords(self):
+        return self.x, self.y
+
+    def calc_movement(self):
+        dx = sum(i.dx for i in self.move_q)
+        dy = sum(i.dy for i in self.move_q)
+        self.move_q = [Move(i.dx, i.dy, i.duration) for i in self.move_q if i.duration > 1]
+        return dx, dy
+
+    def update(self, board):
+        dx, dy = self.calc_movement()
+        self._move_x(dx, board.map)
+        self._move_y(dy, board.map)

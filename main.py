@@ -3,44 +3,44 @@ import sys
 import pygame
 
 import converters
+from board import Board
 from camera import Camera
 from grass import Grass
 from player import Player
-from maps import ls_obstacles
-from entity import Entity
+from obs import Obs
 from particles import Particle
 from utils import load_image
 
 
 class App:
-    def __init__(self, size=(1600, 900), obj_ls=None):
+    def __init__(self, size=(1600, 900)):
         pygame.init()
         self.font = pygame.font.SysFont("Arial", 18, bold=True)
         self.screen = pygame.display.set_mode(size)
         self.display = pygame.Surface((size[0] // 2, size[1] // 2))
         self.clock = pygame.time.Clock()
         self.camera = Camera([0, 0])
-        self.player = Player((-20, 0), self.add_particle)
-        self.ls = [Entity((i * 40, i * 20)) for i in range(1, 10)]
+        self.player = Player((-20, 0), 5, load_image('grass.png'))
         self.parts: list[Particle] = []
-        all_grass = [load_image(f'imgs\\grass_{i}.png', 'black') for i in range(6)]
-        obj_ls += [i.rect for i in self.ls]
+        self.board = Board(100)
+        all_grass = [load_image(f'grass_{i}.png', 'black') for i in range(6)]
+        self.board.map += [Obs((i * 40, i * 20)) for i in range(1, 10)]
         self.grass = []
         for i in range(20):
-            for j in range(5):
-                self.grass.append(Grass((i*2.5 - 0, j*2.5 - 0), random.choice(all_grass)))
+            for j in range(20):
+                self.grass.append(Grass((i*3 - 0, j*3 - 0), random.choice(all_grass)))
 
     def check_controls(self):
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_s]:
-            self.player.move(4, 4)
+            self.player.move_coords(4, 4)
         if keys[pygame.K_w]:
-            self.player.move(-4, -4)
+            self.player.move_coords(-4, -4)
         if keys[pygame.K_d]:
-            self.player.move(4, -4)
+            self.player.move_coords(4, -4)
         if keys[pygame.K_a]:
-            self.player.move(-4, 4)
+            self.player.move_coords(-4, 4)
 
     def add_particle(self, x, y):
         self.parts.append(Particle([x, y]))
@@ -51,10 +51,11 @@ class App:
 
     def update(self):
         for i in self.grass:
-            i.update(self.player.get_coords())
+            i.update()
+        self.player.update(self.board)
 
     def render(self):
-        for i in self.ls:
+        for i in self.board.map:
             i.render(self.display, *self.camera.pos)
         for i in range(len(self.parts) - 1, -1, -1):
             if not self.parts[i].render(self.display, *self.camera.pos):
@@ -83,5 +84,5 @@ class App:
 
 
 if __name__ == '__main__':
-    app = App(obj_ls=ls_obstacles)
+    app = App()
     app.run()
