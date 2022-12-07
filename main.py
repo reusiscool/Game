@@ -2,10 +2,11 @@ import random
 import sys
 import pygame
 
-import converters
+from converters import mum_convert
 from board import Board
 from camera import Camera
 from grass import Grass
+from grassController import GrassController
 from player import Player
 from obs import Obs
 from particles import Particle
@@ -16,19 +17,26 @@ class App:
     def __init__(self, size=(1600, 900)):
         pygame.init()
         self.font = pygame.font.SysFont("Arial", 18, bold=True)
+        self.W, self.H = size
         self.screen = pygame.display.set_mode(size)
         self.display = pygame.Surface((size[0] // 2, size[1] // 2))
         self.clock = pygame.time.Clock()
         self.camera = Camera([0, 0])
-        self.player = Player((-20, 0), 5, load_image('grass.png'))
+        self.player = Player((0, 0), 5, load_image('grass.png'))
         self.parts: list[Particle] = []
-        self.board = Board(100)
-        all_grass = [load_image(f'grass_{i}.png', 'black') for i in range(6)]
-        self.board.map += [Obs((i * 40, i * 20)) for i in range(1, 10)]
-        self.grass = []
-        for i in range(20):
-            for j in range(20):
-                self.grass.append(Grass((i*3 - 0, j*3 - 0), random.choice(all_grass)))
+        self.board = Board(50)
+        for i in range(3, 10):
+            self.board.add(Obs((i * 40, i * 20)))
+        self.board.add(self.player)
+        # for i in range(10):
+        #     for j in range(10):
+        #         self.gc.add_tile((i * 10, j * 10))
+
+        # all_grass = [load_image(f'grass_{i}.png', 'black') for i in range(6)]
+        # self.grass = []
+        # for i in range(10):
+        #     for j in range(10):
+        #         self.grass.append(Grass((i * 4, j * 4), random.choice(all_grass)))
 
     def check_controls(self):
         keys = pygame.key.get_pressed()
@@ -50,19 +58,26 @@ class App:
         self.display.blit(fps_t, (0, 0))
 
     def update(self):
-        for i in self.grass:
-            i.update()
-        self.player.update(self.board)
+        self.board.update(self.player.pos, 500)
+        # for i in self.grass:
+        #     i.update(self.player.get_coords())
+        # self.gc.update()
+        # self.player.update(self.board)
 
     def render(self):
-        for i in self.board.map:
-            i.render(self.display, *self.camera.pos)
-        for i in range(len(self.parts) - 1, -1, -1):
-            if not self.parts[i].render(self.display, *self.camera.pos):
-                self.parts.pop(i)
-        for i in self.grass:
-            i.render(self.display, *self.camera.pos)
-        self.player.render(self.display, *self.camera.pos)
+        nx, ny = self.camera.pos
+        nx, ny = mum_convert(nx + self.W // 2, ny + self.H // 2)
+        self.board.render(self.display, *self.camera.pos, 500, nx, ny)
+        # for i in self.board.map:
+        #     i.render(self.display, *self.camera.pos)
+        # for i in range(len(self.parts) - 1, -1, -1):
+        #     if not self.parts[i].render(self.display, *self.camera.pos):
+        #         self.parts.pop(i)
+        # for i in self.grass:
+        #     i.render(self.display, *self.camera.pos)
+        # for i in self.gc.retrieve_surfs():
+        #     i.render(self.display, *self.camera.pos)
+        # self.player.render(self.display, *self.camera.pos)
 
     def run(self):
         while True:
@@ -70,14 +85,15 @@ class App:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-            x, y = self.player.get_coords()
-            x1, y1 = converters.mum_convert(x, y)
+            x, y = self.player.pos
+            x1, y1 = mum_convert(x, y)
             self.camera.adjust((x1, y1), self.display.get_size())
             self.update()
             self.display.fill((250, 80, 100))
             self.fps_counter()
             self.check_controls()
             self.render()
+            pygame.draw.circle(self.display, 'yellow', (self.W // 4, self.H // 4), 3)
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(60)

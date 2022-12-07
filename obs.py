@@ -3,11 +3,18 @@ from converters import mum_convert
 
 
 class Obs:
-    def __init__(self, pos=(100, 100)):
+    def __init__(self, pos, width=0, img=None):
+        self.x, self.y = pos
         self.pos = pos
-        self.rect = pygame.rect.Rect(*pos, 40, 40)
-        self.texture = pygame.Surface((40, 40))
-        self.paint()
+        self.rect = pygame.rect.Rect(*pos, width, width)
+        if not img:
+            self.texture = pygame.Surface((40, 40))
+            self.paint()
+        else:
+            self.texture = img
+
+    def update(self, *args):
+        pass
 
     def paint(self):
         pygame.draw.circle(self.texture, 'yellow', (20, 20), 20)

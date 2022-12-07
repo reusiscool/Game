@@ -1,5 +1,5 @@
 import pygame
-from abc import ABC
+from abc import ABC, abstractmethod
 from move import Move
 
 
@@ -49,7 +49,8 @@ class Entity(ABC):
                     rect.top = r.bottom
                 self.y = rect.y
 
-    def get_coords(self):
+    @property
+    def pos(self):
         return self.x, self.y
 
     def calc_movement(self):
@@ -59,6 +60,13 @@ class Entity(ABC):
         return dx, dy
 
     def update(self, board):
+        board.pop(self)
         dx, dy = self.calc_movement()
-        self._move_x(dx, board.map)
-        self._move_y(dy, board.map)
+        ls = board.get_objects(self.pos, 100)
+        self._move_x(dx, ls)
+        self._move_y(dy, ls)
+        board.add(self)
+
+    @abstractmethod
+    def render(self, surf, camera_x, camera_y):
+        pass
