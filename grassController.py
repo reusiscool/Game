@@ -13,20 +13,21 @@ class GrassController:
         self.max_uniq = max_uniq
         self.chunk_size = tile_size
         self.grass_text_list = [load_image(f'grass_{i}.png', 'black') for i in range(6)]
-        self.cached = dict()
+        self.cached_surfs = []
         self.grass_chunks = []
         self.time = 0
         self.speed = 0.5
         self.addition = 15
 
     def add_tile(self, pos):
-        ind = len(self.cached)
+        ind = len(self.cached_surfs)
         if ind >= self.max_uniq:
             self.grass_chunks.append((pos, randint(0, self.max_uniq - 1)))
-        self.cached[ind] = [None] * self.time_cap
+        self.cached_surfs.append([])
+        self.cached_surfs[ind] = [None] * self.time_cap
         gr = []
-        for i in range(0, self.chunk_size, 4):
-            for j in range(0, self.chunk_size, 4):
+        for i in range(0, self.chunk_size, 3):
+            for j in range(0, self.chunk_size, 3):
                 gr.append(Grass((i, j), choice(self.grass_text_list), self.time_cap // 4, 1))
         for i in range(self.time_cap):
             surf = pygame.Surface((self.chunk_size + self.addition * 2, self.chunk_size + self.addition * 2))
@@ -34,7 +35,7 @@ class GrassController:
             for g in gr:
                 g.update()
                 g.render(surf, -self.addition, -self.addition)
-            self.cached[ind][i] = surf
+            self.cached_surfs[ind][i] = surf
         self.grass_chunks.append((pos, ind))
 
     def update(self, force_pos=None):  # todo mb force_pos List
@@ -43,7 +44,7 @@ class GrassController:
     def retrieve_surfs(self):
         ls = []
         for i in self.grass_chunks:
-            ls.append(GrassChunk(i[0], self.cached[i[1]][int(self.time)], self.addition))
+            ls.append(GrassChunk(i[0], self.cached_surfs[i[1]][int(self.time)], self.addition))
         return ls
 
 

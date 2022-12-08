@@ -2,7 +2,7 @@ import random
 import sys
 import pygame
 
-from converters import mum_convert
+from converters import mum_convert, back_convert
 from board import Board
 from camera import Camera
 from grass import Grass
@@ -22,11 +22,11 @@ class App:
         self.display = pygame.Surface((size[0] // 2, size[1] // 2))
         self.clock = pygame.time.Clock()
         self.camera = Camera([0, 0])
-        self.player = Player((0, 0), 5, load_image('grass.png'))
+        self.player = Player((0, 0), 5, load_image('grass.png'), 4)
         self.parts: list[Particle] = []
         self.board = Board(50)
         for i in range(3, 10):
-            self.board.add(Obs((i * 40, i * 20)))
+            self.board.add(Obs((i * 40, i * 20), 40))
         self.board.add(self.player)
         # for i in range(10):
         #     for j in range(10):
@@ -42,13 +42,13 @@ class App:
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_s]:
-            self.player.move_coords(4, 4)
+            self.player.move_coords(4, 4, own_speed=True)
         if keys[pygame.K_w]:
-            self.player.move_coords(-4, -4)
+            self.player.move_coords(-4, -4, own_speed=True)
         if keys[pygame.K_d]:
-            self.player.move_coords(4, -4)
+            self.player.move_coords(4, -4, own_speed=True)
         if keys[pygame.K_a]:
-            self.player.move_coords(-4, 4)
+            self.player.move_coords(-4, 4, own_speed=True)
 
     def add_particle(self, x, y):
         self.parts.append(Particle([x, y]))
@@ -66,8 +66,8 @@ class App:
 
     def render(self):
         nx, ny = self.camera.pos
-        nx, ny = mum_convert(nx + self.W // 2, ny + self.H // 2)
-        self.board.render(self.display, *self.camera.pos, 500, nx, ny)
+        nx, ny = back_convert(nx + self.W // 4, ny + self.H // 4)
+        self.board.render(self.display, *self.camera.pos, 200, nx, ny)
         # for i in self.board.map:
         #     i.render(self.display, *self.camera.pos)
         # for i in range(len(self.parts) - 1, -1, -1):

@@ -6,8 +6,8 @@ from entity import Entity
 class Player(Entity):
     radius = 10
 
-    def __init__(self, pos, hitbox_size, image):
-        super().__init__(pos, hitbox_size, image)
+    def __init__(self, pos, hitbox_size, image, speed):
+        super().__init__(pos, hitbox_size, image, speed)
 
     def render(self, surf: pygame.Surface, camera_x, camera_y):
         x, y = converters.mum_convert(*self.pos)

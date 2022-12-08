@@ -1,0 +1,46 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "test11.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "Все файлы (*)",
+    "fileStates": {
+        "test1.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "test11.tmx": {
+            "scale": 2,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1801.75,
+                "y": 93
+            }
+        }
+    },
+    "last.imagePath": "C:/Users/tntfi/Desktop/StupidGames/GameTry/tiled/Images",
+    "map.height": 60,
+    "map.lastUsedFormat": "tmx",
+    "map.orientation": null,
+    "map.renderOrder": null,
+    "map.tileHeight": 30,
+    "map.tileWidth": 60,
+    "map.width": 60,
+    "openFiles": [
+        "test11.tmx"
+    ],
+    "project": "proj.tiled-project",
+    "recentFiles": [
+        "test11.tmx",
+        "test1.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 30,
+        "width": 60
+    }
+}
