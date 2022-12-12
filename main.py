@@ -1,12 +1,9 @@
-import random
 import sys
 import pygame
 
 from converters import mum_convert, back_convert
 from board import Board
 from camera import Camera
-from grass import Grass
-from grassController import GrassController
 from player import Player
 from obs import Obs
 from particles import Particle
@@ -24,31 +21,20 @@ class App:
         self.camera = Camera([0, 0])
         self.player = Player((0, 0), 5, load_image('grass.png'), 4)
         self.parts: list[Particle] = []
-        self.board = Board(50)
+        self.board = Board(30)
         for i in range(3, 10):
             self.board.add(Obs((i * 40, i * 20), 40))
         self.board.add(self.player)
-        # for i in range(10):
-        #     for j in range(10):
-        #         self.gc.add_tile((i * 10, j * 10))
-
-        # all_grass = [load_image(f'grass_{i}.png', 'black') for i in range(6)]
-        # self.grass = []
-        # for i in range(10):
-        #     for j in range(10):
-        #         self.grass.append(Grass((i * 4, j * 4), random.choice(all_grass)))
 
     def check_controls(self):
         keys = pygame.key.get_pressed()
-
-        if keys[pygame.K_s]:
-            self.player.move_coords(4, 4, own_speed=True)
-        if keys[pygame.K_w]:
-            self.player.move_coords(-4, -4, own_speed=True)
-        if keys[pygame.K_d]:
-            self.player.move_coords(4, -4, own_speed=True)
-        if keys[pygame.K_a]:
-            self.player.move_coords(-4, 4, own_speed=True)
+        s = keys[pygame.K_s]
+        d = keys[pygame.K_d]
+        w = keys[pygame.K_w]
+        a = keys[pygame.K_a]
+        if keys[pygame.K_LSHIFT]:
+            self.player.dash(s - w + d - a, s - w - d + a)
+        self.player.move_coords(s - w + d - a, s - w - d + a, own_speed=True)
 
     def add_particle(self, x, y):
         self.parts.append(Particle([x, y]))
@@ -59,25 +45,11 @@ class App:
 
     def update(self):
         self.board.update(self.player.pos, 500)
-        # for i in self.grass:
-        #     i.update(self.player.get_coords())
-        # self.gc.update()
-        # self.player.update(self.board)
 
     def render(self):
         nx, ny = self.camera.pos
         nx, ny = back_convert(nx + self.W // 4, ny + self.H // 4)
         self.board.render(self.display, *self.camera.pos, 200, nx, ny)
-        # for i in self.board.map:
-        #     i.render(self.display, *self.camera.pos)
-        # for i in range(len(self.parts) - 1, -1, -1):
-        #     if not self.parts[i].render(self.display, *self.camera.pos):
-        #         self.parts.pop(i)
-        # for i in self.grass:
-        #     i.render(self.display, *self.camera.pos)
-        # for i in self.gc.retrieve_surfs():
-        #     i.render(self.display, *self.camera.pos)
-        # self.player.render(self.display, *self.camera.pos)
 
     def run(self):
         while True:

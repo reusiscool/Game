@@ -5,7 +5,9 @@ from utils import normalize
 
 
 class Entity(ABC):
-    def __init__(self, pos, hitbox_size, image, speed=2):
+    def __init__(self, pos, hitbox_size, image, speed=2, health=0, max_health=0):
+        self.max_health = max_health
+        self.current_health = health
         self.x = pos[0]
         self.y = pos[1]
         self.hitbox_size = hitbox_size
@@ -58,17 +60,14 @@ class Entity(ABC):
     def calc_movement(self):
         dx = 0
         dy = 0
-        sx, sy = 0, 0
         for mov in self.move_q:
             if mov.own_speed:
-                sx += mov.dx
-                sy += mov.dy
+                sx, sy = normalize(*mov.pos)
+                dx += sx * self.speed
+                dy += sy * self.speed
                 continue
             dx += mov.dx
             dy += mov.dy
-        sx, sy = normalize(sx, sy)
-        dx += sx * self.speed
-        dy += sy * self.speed
         self.move_q = [Move(i.dx, i.dy, i.duration - 1, i.own_speed) for i in self.move_q if i.duration > 1]
         return dx, dy
 

@@ -9,20 +9,31 @@ from utils import load_image
 class GrassController:
     time_cap = 100
 
-    def __init__(self, tile_size=10, max_uniq=5):
+    def __init__(self, chunksize=10, tile_size=30, max_uniq=5):
+        self.tile_size = tile_size
         self.max_uniq = max_uniq
-        self.chunk_size = tile_size
+        self.chunk_size = chunksize
         self.grass_text_list = [load_image(f'grass_{i}.png', 'black') for i in range(6)]
         self.cached_surfs = []
-        self.grass_chunks = []
+        self.grass_chunks = dict()
         self.time = 0
         self.speed = 0.5
         self.addition = 15
 
+    def put(self, pos, ind):
+        dx = pos[0] // self.tile_size
+        dy = pos[1] // self.tile_size
+        if dy not in self.grass_chunks:
+            self.grass_chunks[dy] = dict()
+        if dx not in self.grass_chunks[dy]:
+            self.grass_chunks[dy][dx] = []
+        self.grass_chunks[dy][dx].append((pos, ind))
+
     def add_tile(self, pos):
         ind = len(self.cached_surfs)
         if ind >= self.max_uniq:
-            self.grass_chunks.append((pos, randint(0, self.max_uniq - 1)))
+            self.put(pos, randint(0, self.max_uniq - 1))
+            return
         self.cached_surfs.append([])
         self.cached_surfs[ind] = [None] * self.time_cap
         gr = []
@@ -36,16 +47,27 @@ class GrassController:
                 g.update()
                 g.render(surf, -self.addition, -self.addition)
             self.cached_surfs[ind][i] = surf
-        self.grass_chunks.append((pos, ind))
+        self.put(pos, ind)
 
     def update(self, force_pos=None):  # todo mb force_pos List
         self.time = 0 if self.time >= self.time_cap - self.speed else self.time + self.speed
 
-    def retrieve_surfs(self):
+    def retrieve_surfs(self, pos, distance):
+        x, y = pos
+        x //= self.tile_size
+        y //= self.tile_size
+        distance //= self.tile_size
+        x, y = map(int, (x, y))
         ls = []
-        for i in self.grass_chunks:
-            ls.append(GrassChunk(i[0], self.cached_surfs[i[1]][int(self.time)], self.addition))
-        return ls
+        for ny in range(y - distance, y + distance + 1):
+            if ny not in self.grass_chunks:
+                continue
+            for nx in range(x - distance, x + distance + 1):
+                if nx not in self.grass_chunks[ny]:
+                    continue
+                for i in self.grass_chunks[ny][nx]:
+                    ls.append(GrassChunk(i[0], self.cached_surfs[i[1]][int(self.time)], self.addition))
+        return sorted(ls, key=lambda o: sum(o.pos))
 
 
 class GrassChunk:

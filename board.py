@@ -1,20 +1,23 @@
 from pytmx.util_pygame import load_pygame
 import os
+from enum import Enum
 
 from entity import Entity
 from grassController import GrassController
 from obs import Obs
 
 
+class Level(Enum):
+    Floor = 'Floor'
+    Grass = 'Grass'
+
+
 class BoardReader:
     def __init__(self):
         self.reader = load_pygame(os.path.join('tiled', 'tsxFiles', 'test11.tmx'))
 
-    def get_floor(self):
-        pass
-
-    def get_grass(self):
-        pass
+    def get_level(self, level: Level):
+        return self.reader.get_layer_by_name(level.value)
 
 
 class Board:
@@ -23,10 +26,10 @@ class Board:
         self.map: dict[int, dict[int, list[Entity]]] = {}
         self.reader = BoardReader()
         self.gc = GrassController()
-        for o in self.reader.reader.get_layer_by_name('Floor').tiles():
+        for o in self.reader.get_level(Level.Floor).tiles():
             x, y, surf = o
-            self.add(Obs((x * 30, y * 30), 0, surf))
-        for o in self.reader.reader.get_layer_by_name('Grass'):
+            self.add(Obs((x * self.tile_size, y * self.tile_size), 0, surf))
+        for o in self.reader.get_level(Level.Grass):
             self.gc.add_tile((o.x, o.y))
 
     def add(self, obj: Entity):
@@ -72,19 +75,8 @@ class Board:
         self.gc.update()
 
     def render(self, surf, camera_x, camera_y, distance, pos_x, pos_y):
-        x = int(pos_x // self.tile_size)
-        y = int(pos_y // self.tile_size)
-        distance //= self.tile_size
-        for ny in range(y - distance, y + distance + 1):
-            if ny not in self.map:
-                continue
-            for nx in range(x - distance, x + distance + 1):
-                if nx not in self.map[ny]:
-                    continue
-                ls = self.map[ny][nx]
-                ls.sort(key=lambda o: o.x + o.y)
-                for i in ls:
-                    i.render(surf, camera_x, camera_y)
-        for i in self.gc.retrieve_surfs():
+        ls = self.get_objects((pos_x, pos_y), distance) + self.gc.retrieve_surfs((pos_x, pos_y), distance)
+        ls.sort(key=lambda o: sum(o.pos))
+        for i in ls:
             i.render(surf, camera_x, camera_y)
 
