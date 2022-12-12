@@ -1,5 +1,7 @@
 import pygame
 from abc import ABC, abstractmethod
+
+from converters import mum_convert
 from move import Move
 from utils import normalize
 
@@ -79,6 +81,8 @@ class Entity(ABC):
         self._move_y(dy, ls)
         board.add(self)
 
-    @abstractmethod
-    def render(self, surf, camera_x, camera_y):
-        pass
+    def render(self, surf: pygame.Surface, camera_x, camera_y):
+        x, y = mum_convert(*self.pos)
+        off_x = self.image.get_width() // 2
+        off_y = self.image.get_height()
+        surf.blit(self.image, (x - camera_x - off_x, y - camera_y - off_y + self.hitbox_size // 2))

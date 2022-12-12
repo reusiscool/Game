@@ -10,6 +10,7 @@ from obs import Obs
 class Level(Enum):
     Floor = 'Floor'
     Grass = 'Grass'
+    Boxes = 'Boxes'
 
 
 class BoardReader:
@@ -21,7 +22,8 @@ class BoardReader:
 
 
 class Board:
-    def __init__(self, tile_size):
+    def __init__(self, tile_size, player):
+        self.player = player
         self.tile_size = tile_size
         self.map: dict[int, dict[int, list[Entity]]] = {}
         self.reader = BoardReader()
@@ -29,8 +31,22 @@ class Board:
         for o in self.reader.get_level(Level.Floor).tiles():
             x, y, surf = o
             self.add(Obs((x * self.tile_size, y * self.tile_size), 0, surf))
+        for o in self.reader.get_level(Level.Boxes).tiles():
+            x, y, _ = o
+            self.add(Obs((x * self.tile_size, y * self.tile_size), self.tile_size))
         for o in self.reader.get_level(Level.Grass):
             self.gc.add_tile((o.x, o.y))
+        self.boxes = self.get_boxes()
+
+    def get_boxes(self):
+        boxes = dict()
+        level = self.reader.get_level(Level.Boxes)
+        for tile in level.tiles():
+            x, y, _ = tile
+            if y not in boxes:
+                boxes[y] = dict()
+            boxes[y][x] = 1
+        return boxes
 
     def add(self, obj: Entity):
         x, y = obj.pos

@@ -4,6 +4,7 @@ import pygame
 from converters import mum_convert, back_convert
 from board import Board
 from camera import Camera
+from enemy import Enemy
 from player import Player
 from obs import Obs
 from particles import Particle
@@ -19,12 +20,11 @@ class App:
         self.display = pygame.Surface((size[0] // 2, size[1] // 2))
         self.clock = pygame.time.Clock()
         self.camera = Camera([0, 0])
-        self.player = Player((0, 0), 5, load_image('grass.png'), 4)
+        self.player = Player((0, 0), 5, load_image('grass.jpg'), 4)
         self.parts: list[Particle] = []
-        self.board = Board(30)
-        for i in range(3, 10):
-            self.board.add(Obs((i * 40, i * 20), 40))
+        self.board = Board(30, self.player)
         self.board.add(self.player)
+        self.board.add(Enemy((500, 500), 5, load_image('grass.jpg'), 2))
 
     def check_controls(self):
         keys = pygame.key.get_pressed()
@@ -37,7 +37,7 @@ class App:
         self.player.move_coords(s - w + d - a, s - w - d + a, own_speed=True)
 
     def add_particle(self, x, y):
-        self.parts.append(Particle([x, y]))
+        self.parts.append(Particle((x, y)))
 
     def fps_counter(self):
         fps_t = self.font.render(str(int(self.clock.get_fps())), True, 'Blue')
@@ -50,6 +50,9 @@ class App:
         nx, ny = self.camera.pos
         nx, ny = back_convert(nx + self.W // 4, ny + self.H // 4)
         self.board.render(self.display, *self.camera.pos, 200, nx, ny)
+        for i in range(len(self.parts) - 1, -1, -1):
+            if not self.parts[i].render(self.display, *self.camera.pos):
+                self.parts.pop(i)
 
     def run(self):
         while True:
@@ -57,6 +60,18 @@ class App:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    cx, cy = self.camera.pos
+                    x *= 0.5
+                    y *= 0.5
+                    x += cx
+                    y += cy
+                    x, y = back_convert(x, y)
+                    r = 10
+                    s = pygame.Surface((2 * r, 2 * r))
+                    pygame.draw.circle(s, 'red', (r, r), r)
+                    self.board.add(Obs((x, y), 2 * r, s))
             x, y = self.player.pos
             x1, y1 = mum_convert(x, y)
             self.camera.adjust((x1, y1), self.display.get_size())
@@ -72,5 +87,5 @@ class App:
 
 
 if __name__ == '__main__':
-    app = App()
+    app = App((800, 400))
     app.run()

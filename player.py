@@ -1,22 +1,14 @@
-import pygame
-import converters
 from entity import Entity
 from move import Move
 from utils import normalize
 
 
 class Player(Entity):
-    def __init__(self, pos, hitbox_size, image, speed):
-        super().__init__(pos, hitbox_size, image, speed)
+    def __init__(self, pos, hitbox_size, image, speed, health=0, max_health=0):
+        super().__init__(pos, hitbox_size, image, speed, health, max_health)
         self.dash_cooldown = 60
         self.dash_current_cooldown = 0
         self.dash_speed = 3
-
-    def render(self, surf: pygame.Surface, camera_x, camera_y):
-        x, y = converters.mum_convert(*self.pos)
-        off_x = self.image.get_width() // 2
-        off_y = self.image.get_height()
-        surf.blit(self.image, (x - camera_x - off_x, y - camera_y - off_y + self.hitbox_size // 2))
 
     def update(self, board):
         super().update(board)

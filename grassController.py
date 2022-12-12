@@ -7,7 +7,7 @@ from utils import load_image
 
 
 class GrassController:
-    time_cap = 100
+    time_cap = 200
 
     def __init__(self, chunksize=10, tile_size=30, max_uniq=5):
         self.tile_size = tile_size
