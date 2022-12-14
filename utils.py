@@ -5,8 +5,8 @@ import os
 from numba import njit
 
 
-def load_image(path, color_key=None):
-    img = pygame.image.load(os.path.join('imgs', path))
+def load_image(*path, color_key=None):
+    img = pygame.image.load(os.path.join('imgs', *path))
     if color_key is not None:
         img.set_colorkey(color_key)
     surf = img.convert()
@@ -47,3 +47,33 @@ def draw_line(x0, y0, x1, y1):
             error = error + dx
             y0 = y0 + sy
     return ans
+
+
+def get_items(self, pos, distance, map_):
+    x, y = pos
+    stx = int((x - distance) // self.tile_size)
+    endx = int((x + distance) // self.tile_size)
+    sty = int((y - distance) // self.tile_size)
+    endy = int((y + distance) // self.tile_size)
+    ls = []
+    for ny in range(sty, endy + 1):
+        if ny not in map_:
+            continue
+        for nx in range(stx, endx + 1):
+            if nx not in map_[ny]:
+                continue
+            for b in map_[ny][nx]:
+                ls.append(b)
+    return ls
+
+
+def vector_len(vec):
+    return (vec[0] ** 2 + vec[1] ** 2) ** 0.5
+
+
+def vector_angle(vec1, vec2):
+    """ vec1: (x0, y0); vec2: (x1, y1) - returns cosine of angle between vectors"""
+    a = (vector_len(vec1) * vector_len(vec2))
+    if a == 0:
+        return -1
+    return (vec1[0] * vec2[0] + vec1[1] * vec2[1]) / a

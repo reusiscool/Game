@@ -1,18 +1,37 @@
 from entity import Entity
 from move import Move
-from utils import normalize
+from utils import normalize, load_image
+from sword import Sword
 
 
 class Player(Entity):
-    def __init__(self, pos, hitbox_size, image, speed, health=0, max_health=0):
-        super().__init__(pos, hitbox_size, image, speed, health, max_health)
+    def __init__(self, pos, hitbox_size, image_list, speed, health=0, max_health=0):
+        super().__init__(pos, hitbox_size, image_list, speed, health, max_health)
         self.dash_cooldown = 60
         self.dash_current_cooldown = 0
         self.dash_speed = 3
+        self.weapon = Sword([load_image('sword', 'sword.png', color_key='white')], self)
+        self.try_attack = False
+        self.looking_direction = (1, 1)
+
+    def render(self, surf, camera_x, camera_y):
+        super().render(surf, camera_x, camera_y)
+        self.weapon.render(surf, camera_x, camera_y)
+
+    def attack(self):
+        self.try_attack = True
 
     def update(self, board):
         super().update(board)
         self.dash_current_cooldown = max(0, self.dash_current_cooldown - 1)
+        self.weapon.update()
+        if self.try_attack:
+            self.weapon.attack(board)
+            self.try_attack = False
+
+    def move_input(self, x, y):
+        self.looking_direction = (x, y)
+        self.move_coords(x, y, own_speed=True)
 
     def dash(self, dx, dy):
         dx, dy = normalize(dx, dy)

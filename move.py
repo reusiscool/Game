@@ -11,3 +11,6 @@ class Move:
     @property
     def pos(self):
         return self.dx, self.dy
+
+    def update(self):
+        self.duration -= 1

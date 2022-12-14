@@ -3,7 +3,7 @@ import pygame
 
 from converters import mum_convert
 from grass import Grass
-from utils import load_image
+from utils import load_image, get_items
 
 
 class GrassController:
@@ -13,7 +13,7 @@ class GrassController:
         self.tile_size = tile_size
         self.max_uniq = max_uniq
         self.chunk_size = chunksize
-        self.grass_text_list = [load_image(f'grass_{i}.png', 'black') for i in range(6)]
+        self.grass_text_list = [load_image('grass', f'grass_{i}.png', color_key='black') for i in range(6)]
         self.cached_surfs = []
         self.grass_chunks = dict()
         self.time = 0
@@ -53,21 +53,10 @@ class GrassController:
         self.time = 0 if self.time >= self.time_cap - self.speed else self.time + self.speed
 
     def retrieve_surfs(self, pos, distance):
-        x, y = pos
-        x //= self.tile_size
-        y //= self.tile_size
-        distance //= self.tile_size
-        x, y = map(int, (x, y))
-        ls = []
-        for ny in range(y - distance, y + distance + 1):
-            if ny not in self.grass_chunks:
-                continue
-            for nx in range(x - distance, x + distance + 1):
-                if nx not in self.grass_chunks[ny]:
-                    continue
-                for i in self.grass_chunks[ny][nx]:
-                    ls.append(GrassChunk(i[0], self.cached_surfs[i[1]][int(self.time)], self.addition))
-        return sorted(ls, key=lambda o: sum(o.pos))
+        res = []
+        for i in get_items(self, pos, distance, self.grass_chunks):
+            res.append(GrassChunk(i[0], self.cached_surfs[int(i[1])][int(self.time)], self.addition))
+        return sorted(res, key=lambda o: sum(o.pos))
 
 
 class GrassChunk:

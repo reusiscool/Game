@@ -5,6 +5,7 @@ from enum import Enum
 from entity import Entity
 from grassController import GrassController
 from obs import Obs
+from utils import draw_line, get_items
 
 
 class Level(Enum):
@@ -15,7 +16,7 @@ class Level(Enum):
 
 class BoardReader:
     def __init__(self):
-        self.reader = load_pygame(os.path.join('tiled', 'tsxFiles', 'test11.tmx'))
+        self.reader = load_pygame(os.path.join('tiled', 'tsxFiles', 'bigmap.tmx'))
 
     def get_level(self, level: Level):
         return self.reader.get_layer_by_name(level.value)
@@ -25,9 +26,10 @@ class Board:
     def __init__(self, tile_size, player):
         self.player = player
         self.tile_size = tile_size
-        self.map: dict[int, dict[int, list[Entity]]] = {}
+        self.collider_map: dict[int, dict[int, list[Entity]]] = {}
+        self.update_map: dict[int, dict[int, list[Entity]]] = {}
         self.reader = BoardReader()
-        self.gc = GrassController()
+        self.gc = GrassController(10, self.tile_size, 10)
         for o in self.reader.get_level(Level.Floor).tiles():
             x, y, surf = o
             self.add(Obs((x * self.tile_size, y * self.tile_size), 0, surf))
@@ -48,42 +50,73 @@ class Board:
             boxes[y][x] = 1
         return boxes
 
+    def add_entity(self, obj):
+        x, y = obj.pos
+        x //= self.tile_size
+        y //= self.tile_size
+        if y not in self.update_map:
+            self.update_map[y] = {}
+        if x not in self.update_map[y]:
+            self.update_map[y][x] = []
+        self.update_map[y][x].append(obj)
+        self.add(obj)
+
     def add(self, obj: Entity):
         x, y = obj.pos
         x //= self.tile_size
         y //= self.tile_size
-        if y not in self.map:
-            self.map[y] = {}
-        if x not in self.map[y]:
-            self.map[y][x] = []
-        self.map[y][x].append(obj)
+        if y not in self.collider_map:
+            self.collider_map[y] = {}
+        if x not in self.collider_map[y]:
+            self.collider_map[y][x] = []
+        self.collider_map[y][x].append(obj)
 
     def pop(self, obj):
         x, y = obj.pos
         x //= self.tile_size
         y //= self.tile_size
-        if y not in self.map:
+        if y not in self.collider_map:
             return
-        if x not in self.map[y]:
+        if x not in self.collider_map[y]:
             return
-        self.map[y][x].remove(obj)
+        self.collider_map[y][x].remove(obj)
 
-    def get_objects(self, pos, distance):
-        x, y = pos
+    def pop_entity(self, obj):
+        self.pop(obj)
+        x, y = obj.pos
         x //= self.tile_size
         y //= self.tile_size
-        distance //= self.tile_size
-        x, y = map(int, (x, y))
-        ls = []
-        for ny in range(y - distance, y + distance + 1):
-            if ny not in self.map:
+        if y not in self.update_map:
+            return
+        if x not in self.update_map[y]:
+            return
+        self.update_map[y][x].remove(obj)
+
+    def get_entities(self, pos, distance):
+        return get_items(self, pos, distance, self.update_map)
+
+    def get_objects(self, pos, distance):
+        return get_items(self, pos, distance, self.collider_map)
+
+    def has_clear_sight(self, entity1: Entity, entity2: Entity = None) -> bool:
+        sx, sy = entity1.pos
+        sx //= self.tile_size
+        sy //= self.tile_size
+
+        if entity2 is None:
+            entity2 = self.player
+
+        px, py = entity2.pos
+        px //= self.tile_size
+        py //= self.tile_size
+
+        for x, y in draw_line(sx, sy, px, py):
+            if y not in self.boxes:
                 continue
-            for nx in range(x - distance, x + distance + 1):
-                if nx not in self.map[ny]:
-                    continue
-                for b in self.map[ny][nx]:
-                    ls.append(b)
-        return ls
+            if x not in self.boxes[y]:
+                continue
+            return False
+        return True
 
     def update(self, pos, distance):
         for i in self.get_objects(pos, distance):
