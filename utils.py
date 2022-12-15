@@ -77,3 +77,32 @@ def vector_angle(vec1, vec2):
     if a == 0:
         return -1
     return (vec1[0] * vec2[0] + vec1[1] * vec2[1]) / a
+
+
+def collides(p1, p2, left, bottom, width, height):
+    # vx = △x, vy = △y
+    right = left + width
+    top = bottom + height
+    x, y = p1
+    x2, y2 = p2
+    vx = x2 - x
+    vy = y2 - y
+    p = [-vx, vx, -vy, vy]
+    q = [x - left, right - x, y - bottom, top - y]
+    u1 = -float('inf')
+    u2 = float('inf')
+
+    for i in range(4):
+        if p[i] == 0:
+            if q[i] < 0:
+                return False
+        else:
+            t = q[i] / p[i]
+            if p[i] < 0 and u1 < t:
+                u1 = t
+            elif p[i] > 0 and u2 > t:
+                u2 = t
+
+    if u1 > u2 or u1 > 1 or u1 < 0:
+        return False
+    return True

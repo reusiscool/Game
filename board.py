@@ -5,7 +5,7 @@ from enum import Enum
 from entity import Entity
 from grassController import GrassController
 from obs import Obs
-from utils import draw_line, get_items
+from utils import draw_line, get_items, collides, vector_len
 
 
 class Level(Enum):
@@ -95,16 +95,30 @@ class Board:
     def get_entities(self, pos, distance):
         return get_items(self, pos, distance, self.update_map)
 
-    def get_objects(self, pos, distance):
+    def get_objects(self, pos, distance) -> list[Entity]:
         return get_items(self, pos, distance, self.collider_map)
 
     def has_clear_sight(self, entity1: Entity, entity2: Entity = None) -> bool:
+
+        if entity2 is None:
+            entity2 = self.player
+
+        cx, cy = (entity1.x + entity2.x) / 2, (entity1.y + entity2.y) / 2
+        d = vector_len((entity1.x - entity2.x, entity1.y - entity2.y))
+        p1, p2 = entity2.pos, entity1.pos
+
+        for obj in self.get_objects((cx, cy), d):
+            if obj in (entity1, entity2):
+                continue
+            if collides(p1, p2, *obj.rect.topleft, *obj.rect.size):
+                return False
+        return True
+
+
         sx, sy = entity1.pos
         sx //= self.tile_size
         sy //= self.tile_size
 
-        if entity2 is None:
-            entity2 = self.player
 
         px, py = entity2.pos
         px //= self.tile_size

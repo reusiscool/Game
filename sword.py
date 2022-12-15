@@ -13,8 +13,8 @@ class Sword(BaseWeapon):
 
     def __init__(self, image_list: list[pygame.Surface], owner: Entity):
         super().__init__(image_list, owner)
+        self.range_ = 100
         self.cooldown = 10
-        self.range_ = 200
 
     def attack(self, board):
         if self.current_cooldown:
@@ -45,4 +45,3 @@ class Sword(BaseWeapon):
         if self.image_index:
             self.image_index += 1
             self.image_index %= len(self.image_list)
-

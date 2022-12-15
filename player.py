@@ -1,7 +1,10 @@
+import pygame
+
 from entity import Entity
 from move import Move
 from utils import normalize, load_image
 from sword import Sword
+from converters import mum_convert
 
 
 class Player(Entity):
@@ -15,6 +18,14 @@ class Player(Entity):
         self.looking_direction = (1, 1)
 
     def render(self, surf, camera_x, camera_y):
+        x, y = normalize(*self.looking_direction)
+        x *= self.weapon.range_
+        y *= self.weapon.range_
+        x += self.x
+        y += self.y
+        x, y = mum_convert(x, y)
+        px, py = mum_convert(*self.pos)
+        pygame.draw.line(surf, 'red', (px - camera_x, py - camera_y), (x - camera_x, y - camera_y))
         super().render(surf, camera_x, camera_y)
         self.weapon.render(surf, camera_x, camera_y)
 
