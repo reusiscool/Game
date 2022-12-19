@@ -79,7 +79,6 @@ def add_item(self, obj, map_):
     map_[y][x].append(obj)
 
 
-
 @njit
 def vector_len(vec):
     return (vec[0] ** 2 + vec[1] ** 2) ** 0.5
@@ -94,8 +93,8 @@ def vector_angle(vec1, vec2):
     return (vec1[0] * vec2[0] + vec1[1] * vec2[1]) / a
 
 
-@njit
-def collides(p1, p2, left, bottom, width, height):
+@njit()
+def collides(p1, p2, left: int, bottom: int, width: int, height: int):
     """
     Checks whether line segment and rect collide
     :param p1: first point of line segment
@@ -115,8 +114,8 @@ def collides(p1, p2, left, bottom, width, height):
     vy = y2 - y
     p = [-vx, vx, -vy, vy]
     q = [x - left, right - x, y - bottom, top - y]
-    u1 = -100000
-    u2 = 100000
+    u1 = -10_000
+    u2 = 10_000
 
     for i in range(4):
         if p[i] == 0:
@@ -148,3 +147,6 @@ def rotate(vec2: Iterable, angle: float) -> tuple[tuple[float, float], tuple[flo
     turn_mat1 = numpy.array([[cosa, -sina], [sina, cosa]])
     turn_mat2 = numpy.array([[cosa, sina], [-sina, cosa]])
     return vec2 @ turn_mat1, vec2 @ turn_mat2
+
+
+collides((0, 1), (1, 0), 10, 10, 10, 10)

@@ -39,7 +39,7 @@ class Sword(BaseWeapon):
         img = self.image_list[self.image_index]
         x, y = mum_convert(*self.owner.pos)
         off_x = img.get_width() // 2 + self.weapon_x_offset
-        if not self.owner.is_flipped:
+        if not self.owner.looking_direction[0] < self.owner.looking_direction[1]:
             img = pygame.transform.flip(img, True, False)
             off_x -= self.weapon_x_offset * 2
         off_y = img.get_height() + self.weapon_y_offset

@@ -12,17 +12,23 @@ class Player(Entity):
         self.dash_cooldown = 40
         self.dash_current_cooldown = 0
         self.dash_speed = 3
-        self.weapon = Sword([load_image('sword', 'sword.png', color_key='white')], self)
+        sw = Sword([load_image('sword', 'sword.png', color_key='white')], self)
+        sw.range_ = 50
+        self.weapon_list = [Sword([load_image('sword', 'sword.png', color_key='white')], self), sw]
         self.abbility = Gun([load_image('sword', 'sword.png', color_key='white')], self)
         self.try_attack = False
         self.try_sec_attack = False
         self.stats[Stat.Mana] = max_mana
         self.stats[Stat.MaxMana] = max_mana
+        self.weapon_index = False
         self.looking_direction = (1, 1)
 
     def render(self, surf, camera_x, camera_y):
-        self.weapon.render(surf, camera_x, camera_y)
+        self.weapon_list[self.weapon_index].render(surf, camera_x, camera_y)
         super().render(surf, camera_x, camera_y)
+
+    def change_weapon(self):
+        self.weapon_index = not self.weapon_index
 
     def secondary_attack(self):
         self.try_sec_attack = True
@@ -49,10 +55,10 @@ class Player(Entity):
     def update(self, board):
         super().update(board)
         self.dash_current_cooldown = max(0, self.dash_current_cooldown - 1)
-        self.weapon.update()
+        self.weapon_list[self.weapon_index].update()
         self.abbility.update()
         if self.try_attack:
-            self.weapon.attack(board)
+            self.weapon_list[self.weapon_index].attack(board)
             self.try_attack = False
         if self.try_sec_attack:
             self.abbility.attack(board)

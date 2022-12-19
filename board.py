@@ -93,18 +93,19 @@ class Board:
         return get_items(self, pos, distance, self.collider_map)
 
     def has_clear_sight(self, entity1: Entity, entity2: Entity = None) -> bool:
-
         if entity2 is None:
             entity2 = self.player
 
         cx, cy = (entity1.x + entity2.x) / 2, (entity1.y + entity2.y) / 2
-        d = vector_len((entity1.x - entity2.x, entity1.y - entity2.y))
-        p1, p2 = entity2.pos, entity1.pos
+        d = vector_len((entity1.x - entity2.x, entity1.y - entity2.y)) / 2
+        p1, p2 = entity1.pos, entity2.pos
+        p1 = tuple(int(i) for i in p1)
+        p2 = tuple(int(i) for i in p2)
 
         for obj in self.get_objects((cx, cy), d):
             if obj in (entity1, entity2):
                 continue
-            if collides(p1, p2, *obj.rect.topleft, *obj.rect.size):
+            if collides(p1, p2, *map(int, (*obj.rect.topleft, *obj.rect.size))):
                 return False
         return True
 

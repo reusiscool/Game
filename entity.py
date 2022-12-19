@@ -16,7 +16,6 @@ class Entity(ABC):
         self.image_index = 0
         self.move_q: list[Move] = []
         self.stats = {Stat.Health: health, Stat.MaxHealth: max_health, Stat.Speed: speed}
-        self.is_flipped = False
         self.looking_direction = (0, 0)
         self.collided = False
 
@@ -89,10 +88,6 @@ class Entity(ABC):
         board.pop_entity(self)
         self.collided = False
         dx, dy = self.calc_movement()
-        if dx - dy > 0:
-            self.is_flipped = False
-        elif dx - dy < 0:
-            self.is_flipped = True
         ls = board.get_objects(self.pos, 100)
         self._move_x(dx, ls)
         self._move_y(dy, ls)
@@ -103,7 +98,8 @@ class Entity(ABC):
         self.image_index += 1
         self.image_index %= len(self.image_list)
         img = self.image_list[self.image_index]
-        if self.is_flipped:
+        lx, ly = self.looking_direction
+        if ly > lx:
             img = pygame.transform.flip(img, True, False)
         x, y = mum_convert(*self.pos)
         off_x = img.get_width() // 2

@@ -15,6 +15,7 @@ from utils import load_image, normalize
 class App:
     def __init__(self, size=(1600, 900)):
         pygame.init()
+        self.FPS = 60
         self.font = pygame.font.SysFont("Arial", 18, bold=True)
         self.W, self.H = size
         self.screen = pygame.display.set_mode(size)
@@ -31,7 +32,7 @@ class App:
         self.board.add_entity(self.player)
         self.gameui = UIGame(self.player, (self.W // 2, self.H // 2))
         for i in range(10):
-            self.board.add_entity(Enemy((500 + i, 500), 5, [load_image('grass.jpg')], 2, health=100))
+            self.board.add_entity(Enemy((500 + i * 15, 500), 5, [load_image('grass.jpg')], 2, health=100))
 
     def check_controls(self):
         keys = pygame.key.get_pressed()
@@ -87,6 +88,8 @@ class App:
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
                     self.player.attack()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
+                    self.player.change_weapon()
             x, y = self.player.pos
             x1, y1 = mum_convert(x, y)
             self.camera.adjust((x1, y1), self.display.get_size())
@@ -98,7 +101,7 @@ class App:
             pygame.draw.circle(self.display, 'yellow', (self.W // 4, self.H // 4), 3)
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
-            self.clock.tick(60)
+            self.clock.tick(self.FPS)
 
 
 if __name__ == '__main__':
