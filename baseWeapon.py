@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import pygame
 
+from converters import mum_convert
 from entity import Entity
 
 
@@ -25,3 +26,12 @@ class BaseWeapon(ABC):
     @abstractmethod
     def render(self, surf, camera_x, camera_y):
         pass
+
+    def draw_line(self, norm_pos, distance):
+        x, y = norm_pos
+        x *= distance
+        y *= distance
+        x += self.owner.x
+        y += self.owner.y
+        x, y = mum_convert(x, y)
+        return x, y

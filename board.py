@@ -5,7 +5,7 @@ from enum import Enum
 from entity import Entity
 from grassController import GrassController
 from obs import Obs
-from utils import draw_line, get_items, collides, vector_len
+from utils import get_items, collides, vector_len, add_item
 
 
 class Level(Enum):
@@ -28,17 +28,19 @@ class Board:
         self.tile_size = tile_size
         self.collider_map: dict[int, dict[int, list[Entity]]] = {}
         self.update_map: dict[int, dict[int, list[Entity]]] = {}
+        self.floor_map: dict[int, dict[int, list[Entity]]] = {}
         self.reader = BoardReader()
         self.gc = GrassController(10, self.tile_size, 10)
+        self.projectiles = []
         for o in self.reader.get_level(Level.Floor).tiles():
             x, y, surf = o
-            self.add(Obs((x * self.tile_size, y * self.tile_size), 0, surf))
+            obj = Obs((x * self.tile_size, y * self.tile_size), 0, surf)
+            add_item(self, obj, self.floor_map)
         for o in self.reader.get_level(Level.Boxes).tiles():
             x, y, _ = o
             self.add(Obs((x * self.tile_size, y * self.tile_size), self.tile_size))
         for o in self.reader.get_level(Level.Grass):
             self.gc.add_tile((o.x, o.y))
-        self.boxes = self.get_boxes()
 
     def get_boxes(self):
         boxes = dict()
@@ -50,26 +52,18 @@ class Board:
             boxes[y][x] = 1
         return boxes
 
+    def add_projectile(self, obj):
+        self.projectiles.append(obj)
+
+    def pop_projectile(self, obj):
+        self.projectiles.remove(obj)
+
     def add_entity(self, obj):
-        x, y = obj.pos
-        x //= self.tile_size
-        y //= self.tile_size
-        if y not in self.update_map:
-            self.update_map[y] = {}
-        if x not in self.update_map[y]:
-            self.update_map[y][x] = []
-        self.update_map[y][x].append(obj)
+        add_item(self, obj, self.update_map)
         self.add(obj)
 
     def add(self, obj: Entity):
-        x, y = obj.pos
-        x //= self.tile_size
-        y //= self.tile_size
-        if y not in self.collider_map:
-            self.collider_map[y] = {}
-        if x not in self.collider_map[y]:
-            self.collider_map[y][x] = []
-        self.collider_map[y][x].append(obj)
+        add_item(self, obj, self.collider_map)
 
     def pop(self, obj):
         x, y = obj.pos
@@ -92,7 +86,7 @@ class Board:
             return
         self.update_map[y][x].remove(obj)
 
-    def get_entities(self, pos, distance):
+    def get_entities(self, pos, distance) -> list[Entity]:
         return get_items(self, pos, distance, self.update_map)
 
     def get_objects(self, pos, distance) -> list[Entity]:
@@ -114,31 +108,18 @@ class Board:
                 return False
         return True
 
-
-        sx, sy = entity1.pos
-        sx //= self.tile_size
-        sy //= self.tile_size
-
-
-        px, py = entity2.pos
-        px //= self.tile_size
-        py //= self.tile_size
-
-        for x, y in draw_line(sx, sy, px, py):
-            if y not in self.boxes:
-                continue
-            if x not in self.boxes[y]:
-                continue
-            return False
-        return True
-
     def update(self, pos, distance):
+        for proj in self.projectiles:
+            proj.update(self)
         for i in self.get_objects(pos, distance):
             i.update(self)
         self.gc.update()
 
     def render(self, surf, camera_x, camera_y, distance, pos_x, pos_y):
+        for floor in get_items(self, (pos_x, pos_y), distance, self.floor_map):
+            floor.render(surf, camera_x, camera_y)
         ls = self.get_objects((pos_x, pos_y), distance) + self.gc.retrieve_surfs((pos_x, pos_y), distance)
+        ls += self.projectiles
         ls.sort(key=lambda o: sum(o.pos))
         for i in ls:
             i.render(surf, camera_x, camera_y)

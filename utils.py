@@ -1,8 +1,9 @@
-from random import randint
-
 import pygame
 import os
 from numba import njit
+import numpy
+from math import cos, sin, radians
+from typing import Iterable
 
 
 def load_image(*path, color_key=None):
@@ -67,10 +68,24 @@ def get_items(self, pos, distance, map_):
     return ls
 
 
+def add_item(self, obj, map_):
+    x, y = obj.pos
+    x //= self.tile_size
+    y //= self.tile_size
+    if y not in map_:
+        map_[y] = {}
+    if x not in map_[y]:
+        map_[y][x] = []
+    map_[y][x].append(obj)
+
+
+
+@njit
 def vector_len(vec):
     return (vec[0] ** 2 + vec[1] ** 2) ** 0.5
 
 
+@njit
 def vector_angle(vec1, vec2):
     """ vec1: (x0, y0); vec2: (x1, y1) - returns cosine of angle between vectors"""
     a = (vector_len(vec1) * vector_len(vec2))
@@ -79,7 +94,18 @@ def vector_angle(vec1, vec2):
     return (vec1[0] * vec2[0] + vec1[1] * vec2[1]) / a
 
 
+@njit
 def collides(p1, p2, left, bottom, width, height):
+    """
+    Checks whether line segment and rect collide
+    :param p1: first point of line segment
+    :param p2: second point of line segment
+    :param left: x of rect
+    :param bottom: top in pygame coords
+    :param width: width of rect
+    :param height: height of rect
+    :return: Boolean
+    """
     # vx = △x, vy = △y
     right = left + width
     top = bottom + height
@@ -89,8 +115,8 @@ def collides(p1, p2, left, bottom, width, height):
     vy = y2 - y
     p = [-vx, vx, -vy, vy]
     q = [x - left, right - x, y - bottom, top - y]
-    u1 = -float('inf')
-    u2 = float('inf')
+    u1 = -100000
+    u2 = 100000
 
     for i in range(4):
         if p[i] == 0:
@@ -106,3 +132,19 @@ def collides(p1, p2, left, bottom, width, height):
     if u1 > u2 or u1 > 1 or u1 < 0:
         return False
     return True
+
+
+def rotate(vec2: Iterable, angle: float) -> tuple[tuple[float, float], tuple[float, float]]:
+    """
+    Rotates point around (0; 0)
+    :param vec2: point (x, y)
+    :param angle: degrees
+    :return: coords of two points
+    """
+    vec2 = numpy.array(vec2)
+    rad = radians(angle)
+    cosa = cos(rad)
+    sina = sin(rad)
+    turn_mat1 = numpy.array([[cosa, -sina], [sina, cosa]])
+    turn_mat2 = numpy.array([[cosa, sina], [-sina, cosa]])
+    return vec2 @ turn_mat1, vec2 @ turn_mat2

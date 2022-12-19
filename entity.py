@@ -4,21 +4,21 @@ from abc import ABC
 from converters import mum_convert
 from move import Move
 from utils import normalize
+from states import Stat
 
 
 class Entity(ABC):
     def __init__(self, pos, hitbox_size, image_list: list[pygame.Surface], speed=2, health=0, max_health=0):
-        self.max_health = max_health
-        self.current_health = health
         self.x = pos[0]
         self.y = pos[1]
         self.hitbox_size = hitbox_size
         self.image_list = image_list
         self.image_index = 0
         self.move_q: list[Move] = []
-        self.speed = speed
+        self.stats = {Stat.Health: health, Stat.MaxHealth: max_health, Stat.Speed: speed}
         self.is_flipped = False
         self.looking_direction = (0, 0)
+        self.collided = False
 
     @property
     def rect(self):
@@ -38,6 +38,7 @@ class Entity(ABC):
         for obj in map_:
             r = obj.rect
             if rect.colliderect(r):
+                self.collided = True
                 if dx > 0:
                     rect.right = r.left
                 else:
@@ -47,7 +48,7 @@ class Entity(ABC):
     def damage(self, amount):
         if amount < 0:
             return
-        self.current_health = max(0, self.current_health - amount)
+        self.stats[Stat.Health] = max(0, self.stats[Stat.Health] - amount)
 
     def _move_y(self, dy, map_):
         if not dy:
@@ -57,6 +58,7 @@ class Entity(ABC):
         for obj in map_:
             r = obj.rect
             if rect.colliderect(r):
+                self.collided = True
                 if dy > 0:
                     rect.bottom = r.top
                 else:
@@ -73,8 +75,8 @@ class Entity(ABC):
         for mov in self.move_q:
             if mov.own_speed:
                 sx, sy = normalize(*mov.pos)
-                dx += sx * self.speed
-                dy += sy * self.speed
+                dx += sx * self.stats[Stat.Speed]
+                dy += sy * self.stats[Stat.Speed]
                 continue
             dx += mov.dx
             dy += mov.dy
@@ -85,6 +87,7 @@ class Entity(ABC):
 
     def update(self, board):
         board.pop_entity(self)
+        self.collided = False
         dx, dy = self.calc_movement()
         if dx - dy > 0:
             self.is_flipped = False
@@ -93,7 +96,7 @@ class Entity(ABC):
         ls = board.get_objects(self.pos, 100)
         self._move_x(dx, ls)
         self._move_y(dy, ls)
-        if self.current_health > 0:
+        if self.stats[Stat.Health] > 0:
             board.add_entity(self)
 
     def render(self, surf: pygame.Surface, camera_x, camera_y):

@@ -35,9 +35,6 @@
   <object id="3" x="13" y="67">
    <point/>
   </object>
-  <object id="4" x="18" y="30">
-   <point/>
-  </object>
   <object id="5" x="35" y="13">
    <point/>
   </object>
@@ -101,22 +98,7 @@
   <object id="25" x="29" y="51.5">
    <point/>
   </object>
-  <object id="26" x="17.875" y="39.125">
-   <point/>
-  </object>
-  <object id="27" x="18.125" y="23.875">
-   <point/>
-  </object>
-  <object id="28" x="20" y="7.5">
-   <point/>
-  </object>
-  <object id="29" x="9.25" y="14.75">
-   <point/>
-  </object>
-  <object id="30" x="19.375" y="13.625">
-   <point/>
-  </object>
-  <object id="31" x="12.5" y="35.5">
+  <object id="29" x="0" y="0">
    <point/>
   </object>
   <object id="32" x="9.75" y="45.25">
@@ -129,33 +111,6 @@
    <point/>
   </object>
   <object id="35" x="12.625" y="51.375">
-   <point/>
-  </object>
-  <object id="36" x="19.125" y="30.375">
-   <point/>
-  </object>
-  <object id="37" x="19.625" y="15.875">
-   <point/>
-  </object>
-  <object id="38" x="22.875" y="10.625">
-   <point/>
-  </object>
-  <object id="39" x="26.625" y="11.875">
-   <point/>
-  </object>
-  <object id="40" x="28.25" y="18.25">
-   <point/>
-  </object>
-  <object id="41" x="21.625" y="23.875">
-   <point/>
-  </object>
-  <object id="42" x="22.875" y="30.125">
-   <point/>
-  </object>
-  <object id="43" x="22.5" y="37.5">
-   <point/>
-  </object>
-  <object id="44" x="30" y="13.5">
    <point/>
   </object>
   <object id="45" x="32.5" y="27.5">

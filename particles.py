@@ -4,8 +4,8 @@ from converters import mum_convert
 
 
 class Particle:
-    def __init__(self, pos: tuple):
-        self.radius = randint(3, 6)
+    def __init__(self, pos: tuple, radius):
+        self.radius = radius
         self.x = pos[0] + randint(0, 2) - 3
         self.y = pos[1] + randint(0, 2) - 3
         self.sp_x = (randint(0, 400) - 200) / 100

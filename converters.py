@@ -7,10 +7,10 @@ back_matrix = [[0.5, -0.5],
 
 
 @njit
-def mum_convert(x: int, y: int):
+def mum_convert(x: float, y: float):
     return x - y, x / 2 + y / 2
 
 
 @njit
-def back_convert(x: int, y: int):
+def back_convert(x: float, y: float):
     return x / 2 + y, -x / 2 + y
