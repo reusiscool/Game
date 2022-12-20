@@ -4,7 +4,7 @@ from enum import Enum
 
 from entity import Entity
 from grassController import GrassController
-from obs import Obs
+from obs import Obs, Wall
 from utils import get_items, collides, vector_len, add_item
 
 
@@ -12,11 +12,12 @@ class Level(Enum):
     Floor = 'Floor'
     Grass = 'Grass'
     Boxes = 'Boxes'
+    Walls = 'Walls'
 
 
 class BoardReader:
     def __init__(self):
-        self.reader = load_pygame(os.path.join('tiled', 'tsxFiles', 'bigmap.tmx'))
+        self.reader = load_pygame(os.path.join('tiled', 'tsxFiles', 'Board.tmx'))
 
     def get_level(self, level: Level):
         return self.reader.get_layer_by_name(level.value)
@@ -36,6 +37,9 @@ class Board:
             x, y, surf = o
             obj = Obs((x * self.tile_size, y * self.tile_size), 0, surf)
             add_item(self, obj, self.floor_map)
+        for o in self.reader.get_level(Level.Walls).tiles():
+            x, y, surf = o
+            add_item(self, Wall((x * self.tile_size, y * self.tile_size), 0, surf), self.collider_map)
         for o in self.reader.get_level(Level.Boxes).tiles():
             x, y, _ = o
             self.add(Obs((x * self.tile_size, y * self.tile_size), self.tile_size))
@@ -112,16 +116,31 @@ class Board:
     def update(self, pos, distance):
         for proj in self.projectiles:
             proj.update(self)
-        for i in self.get_objects(pos, distance):
+        for i in self.get_entities(pos, distance):
             i.update(self)
         self.gc.update()
 
-    def render(self, surf, camera_x, camera_y, distance, pos_x, pos_y):
-        for floor in get_items(self, (pos_x, pos_y), distance, self.floor_map):
+    def render(self, surf, camera_x, camera_y, distance, x, y):
+        for floor in get_items(self, (x, y), distance, self.floor_map):
             floor.render(surf, camera_x, camera_y)
-        ls = self.get_objects((pos_x, pos_y), distance) + self.gc.retrieve_surfs((pos_x, pos_y), distance)
-        ls += self.projectiles
-        ls.sort(key=lambda o: sum(o.pos))
-        for i in ls:
-            i.render(surf, camera_x, camera_y)
+        stx = int((x - distance) // self.tile_size)
+        endx = int((x + distance) // self.tile_size)
+        sty = int((y - distance) // self.tile_size)
+        endy = int((y + distance) // self.tile_size)
+        map_ = self.collider_map
+        proj_map = {}
+        for i in self.projectiles:
+            add_item(self, i, proj_map)
+        for ny in range(sty, endy + 1):
+            for nx in range(stx, endx + 1):
+                ls = []
+                if ny in map_ and nx in map_[ny]:
+                    for b in map_[ny][nx]:
+                        ls.append(b)
+                if ny in proj_map and nx in proj_map[ny]:
+                    for b in proj_map[ny][nx]:
+                        ls.append(b)
+                ls.sort(key=lambda o: sum(o.pos))
+                for i in ls:
+                    i.render(surf, camera_x, camera_y)
 

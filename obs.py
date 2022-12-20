@@ -9,12 +9,25 @@ class Obs:
         self.rect = pygame.rect.Rect(*pos, width, width)
         self.texture = img
 
-    def update(self, *args):
-        pass
+    @property
+    def off_x(self):
+        return self.texture.get_width() // 2
+
+    @property
+    def off_y(self):
+        return 0
 
     def render(self, surf: pygame.Surface, camera_x, camera_y):
         if not self.texture:
             return
         x, y = mum_convert(self.rect.x, self.rect.y)
-        off_x = self.texture.get_width() // 2
-        surf.blit(self.texture, (x - camera_x - off_x, y - camera_y))
+        surf.blit(self.texture, (x - camera_x - self.off_x, y - camera_y - self.off_y))
+
+
+class Wall(Obs):
+    def __init__(self, pos, width, img=None):
+        super().__init__(pos, width, img)
+
+    @property
+    def off_y(self):
+        return 80
