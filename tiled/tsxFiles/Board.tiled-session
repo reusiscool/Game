@@ -1,0 +1,51 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "Board.tmx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "Board.tmx": {
+            "scale": 0.33,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 3337.878787878788,
+                "y": 351.5151515151516
+            }
+        },
+        "floor.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "walls.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "C:/Users/tntfi/Desktop/StupidGames/GameTry/tiled/Images",
+    "map.height": 30,
+    "map.lastUsedFormat": "tmx",
+    "map.orientation": null,
+    "map.tileHeight": 100,
+    "map.tileWidth": 200,
+    "openFiles": [
+        "Board.tmx",
+        "floor.tsx",
+        "walls.tsx"
+    ],
+    "project": "Board.tiled-project",
+    "recentFiles": [
+        "walls.tsx",
+        "floor.tsx",
+        "Board.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 180,
+        "width": 200
+    },
+    "tileset.transparentColor": "#ffffff",
+    "tileset.useTransparentColor": true
+}
