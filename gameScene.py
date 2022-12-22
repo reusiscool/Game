@@ -31,8 +31,8 @@ class GameScene:
         self.board = Board(100, self.player)
         self.board.add_entity(self.player)
         self.gameui = UIGame(self.player, (self.W // 2, self.H // 2))
-        for i in range(10):
-            self.board.add_entity(Enemy((500 + i * 15, 500), 5, [load_image('grass.jpg')], 2, health=100))
+        # for i in range(10):
+        #     self.board.add_entity(Enemy((500 + i * 15, 500), 5, [load_image('grass.jpg')], 2, health=100))
 
     def check_controls(self):
         keys = pygame.key.get_pressed()

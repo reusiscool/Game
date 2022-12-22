@@ -7,7 +7,13 @@ from level import Level
 
 lk = Level('haha', 10, 20)
 
-print(lk.generate())
+m = lk.generate()
+
+for y, row in enumerate(m):
+    for x, val in enumerate(row):
+        if val:
+            plt.plot(x, y, marker='o')
+plt.show()
 
 # points = numpy.array([[0, 0], [0, 1.1], [1, 0], [1, 1], [2, 1], [0, -2], [1, -1], [-1, 0], [0, 3]])
 # tri = Delaunay(points)

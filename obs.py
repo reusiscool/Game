@@ -30,4 +30,4 @@ class Wall(Obs):
 
     @property
     def off_y(self):
-        return 80
+        return 60

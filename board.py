@@ -1,26 +1,31 @@
+from random import randint
+
 from pytmx.util_pygame import load_pygame
 import os
 from enum import Enum
 
+from enemy import Enemy
 from entity import Entity
 from grassController import GrassController
+from levelReader import LevelReader
 from obs import Obs, Wall
-from utils import get_items, collides, vector_len, add_item
+from utils import get_items, collides, vector_len, add_item, load_image
+from level import Level
 
 
-class Level(Enum):
-    Floor = 'Floor'
-    Grass = 'Grass'
-    Boxes = 'Boxes'
-    Walls = 'Walls'
+# class Level(Enum):
+#     Floor = 'Floor'
+#     Grass = 'Grass'
+#     Boxes = 'Boxes'
+#     Walls = 'Walls'
 
 
-class BoardReader:
-    def __init__(self):
-        self.reader = load_pygame(os.path.join('tiled', 'tsxFiles', 'Board.tmx'))
-
-    def get_level(self, level: Level):
-        return self.reader.get_layer_by_name(level.value)
+# class BoardReader:
+#     def __init__(self):
+#         self.reader = load_pygame(os.path.join('tiled', 'tsxFiles', 'Board.tmx'))
+#
+#     def get_level(self, level: Level):
+#         return self.reader.get_layer_by_name(level.value)
 
 
 class Board:
@@ -30,21 +35,31 @@ class Board:
         self.collider_map: dict[int, dict[int, list[Entity]]] = {}
         self.update_map: dict[int, dict[int, list[Entity]]] = {}
         self.floor_map: dict[int, dict[int, list[Entity]]] = {}
-        self.reader = BoardReader()
+        self.reader = LevelReader(Level('1', 100, 40))
         self.gc = GrassController(10, self.tile_size, 10)
         self.projectiles = []
-        for o in self.reader.get_level(Level.Floor).tiles():
-            x, y, surf = o
+        for x, y, surf in self.reader.get_floor():
             obj = Obs((x * self.tile_size, y * self.tile_size), 0, surf)
             add_item(self, obj, self.floor_map)
-        for o in self.reader.get_level(Level.Walls).tiles():
-            x, y, surf = o
+        for x, y, surf in self.reader.get_walls():
             add_item(self, Wall((x * self.tile_size, y * self.tile_size), 0, surf), self.collider_map)
-        for o in self.reader.get_level(Level.Boxes).tiles():
-            x, y, _ = o
             self.add(Obs((x * self.tile_size, y * self.tile_size), self.tile_size))
-        for o in self.reader.get_level(Level.Grass):
-            self.gc.add_tile((o.x, o.y))
+        for x, y in self.reader.get_enemies():
+            en = Enemy((x * self.tile_size + randint(0, 30) - 15, y * self.tile_size), 5, [load_image('grass.jpg')], 2, health=100)
+            en.move_coords(0.1, 0.1, 2)
+            self.add_entity(en)
+        # for o in self.reader.get_level(Level.Floor).tiles():
+        #     x, y, surf = o
+        #     obj = Obs((x * self.tile_size, y * self.tile_size), 0, surf)
+        #     add_item(self, obj, self.floor_map)
+        # for o in self.reader.get_level(Level.Walls).tiles():
+        #     x, y, surf = o
+        #     add_item(self, Wall((x * self.tile_size, y * self.tile_size), 0, surf), self.collider_map)
+        # for o in self.reader.get_level(Level.Boxes).tiles():
+        #     x, y, _ = o
+        #     self.add(Obs((x * self.tile_size, y * self.tile_size), self.tile_size))
+        # for o in self.reader.get_level(Level.Grass):
+        #     self.gc.add_tile((o.x, o.y))
 
     def get_boxes(self):
         boxes = dict()

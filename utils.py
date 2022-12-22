@@ -93,7 +93,7 @@ def vector_angle(vec1, vec2):
     return (vec1[0] * vec2[0] + vec1[1] * vec2[1]) / a
 
 
-@njit()
+@njit
 def collides(p1, p2, left: int, bottom: int, width: int, height: int):
     """
     Checks whether line segment and rect collide
@@ -147,6 +147,23 @@ def rotate(vec2: Iterable, angle: float) -> tuple[tuple[float, float], tuple[flo
     turn_mat1 = numpy.array([[cosa, -sina], [sina, cosa]])
     turn_mat2 = numpy.array([[cosa, sina], [-sina, cosa]])
     return vec2 @ turn_mat1, vec2 @ turn_mat2
+
+
+def draw_rect_line(p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    s = set()
+    if x1 > x2:
+        x1, y1, x2, y2 = x2, y2, x1, y1
+    for x in range(x1, x2 + 1):
+        s.add((x, y1))
+    if y1 < y2:
+        for y in range(y1, y2 + 1):
+            s.add((x2, y))
+    else:
+        for y in range(y2, y1 + 1):
+            s.add((x2, y))
+    return s
 
 
 collides((0, 1), (1, 0), 10, 10, 10, 10)

@@ -5,18 +5,27 @@ from random import randint
 from scipy.spatial import Delaunay
 from scipy.sparse.csgraph import minimum_spanning_tree
 
+from utils import draw_rect_line
+
 
 class Level:
     def __init__(self, name, tile_size, size):
         self.size = size
         self.name = name
         self.tile_size = tile_size
+        self.map_ = [[]]
+        self.enimies = []
 
     def generate(self):
+        avg_room_size = 4
+
+        room_num = self.size // avg_room_size * 2
+
         ls = []
-        for _ in range(3):
+        for _ in range(room_num):
             while True:
-                r = pygame.Rect(randint(0, self.size - 1), randint(0, self.size - 1), randint(3, 5), randint(3, 5))
+                w, h = randint(avg_room_size - 1, avg_room_size + 1), randint(avg_room_size - 1, avg_room_size + 1)
+                r = pygame.Rect(randint(0, self.size - 1 - w), randint(0, self.size - 1 - h), w, h)
                 for i in ls:
                     if i.colliderect(r):
                         break
@@ -39,12 +48,20 @@ class Level:
             mtrx[c, b] = mtrx[b, c] = dist(points[c], points[b])
             mtrx[a, c] = mtrx[c, a] = dist(points[a], points[c])
 
-        min_tree = minimum_spanning_tree(mtrx)
-        for i in min_tree.toarray():
-            # p1, p2 = points[i.tocoo().row], points[i.tocoo().col]
-            print(i)
+        min_tree = minimum_spanning_tree(mtrx).toarray().astype(int)
+        for y, row in enumerate(min_tree):
+            for x, val in enumerate(row):
+                if val:
+                    for x5, y5 in draw_rect_line(points[x], points[y]):
+                        map_[y5, x5] = 1
+        for x5, y5 in draw_rect_line((0, 0), points[0]):
+            map_[y5, x5] = 1
+        for i in map_:
+            print(*i)
+        self.map_ = map_
 
-        return map_
+        for i in points:
+            self.enimies += [i] * randint(3, 7)
 
     @classmethod
     def read_from(cls, name, path, tile_size):
