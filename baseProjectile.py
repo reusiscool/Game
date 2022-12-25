@@ -24,6 +24,9 @@ class BaseProjectile:
     def pos(self):
         return self.x, self.y
 
+    def tile_pos(self, tile_size):
+        return self.x // tile_size, self.y // tile_size
+
     def _move_y(self, dy, map_):
         if not dy:
             return

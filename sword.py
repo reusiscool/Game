@@ -1,5 +1,6 @@
-import pygame
 from math import dist, cos, radians
+from dataclasses import dataclass
+import pygame
 
 from baseWeapon import BaseWeapon
 from converters import mum_convert
@@ -8,14 +9,28 @@ from move import Move
 from utils import vector_angle, normalize, rotate
 
 
-class Sword(BaseWeapon):
-    angle_range = 45
-    cosa = cos(angle_range)
+@dataclass(frozen=True, slots=True)
+class SwordStats:
+    damage: int
+    range_: int
+    angle: int
+    cooldown: int
+    knockback: int
 
-    def __init__(self, image_list: list[pygame.Surface], owner: Entity):
+
+class Sword(BaseWeapon):
+
+    def __init__(self, image_list: list[pygame.Surface], owner: Entity, sword_stats: SwordStats):
         super().__init__(image_list, owner)
-        self.range_ = 100
-        self.cooldown = 10
+        self.angle_range = sword_stats.angle
+        self.damage = sword_stats.damage
+        self.cosa = cos(radians(self.angle_range))
+        self.range_ = sword_stats.range_
+        self.cooldown = sword_stats.cooldown
+        self.knockback = sword_stats.knockback
+
+    def get_stats(self):
+        return SwordStats(self.damage, self.range_, self.angle_range, self.cooldown, self.knockback)
 
     def attack(self, board):
         if self.current_cooldown:
@@ -27,10 +42,11 @@ class Sword(BaseWeapon):
                 continue
             if dist(obj.pos, self.owner.pos) <= self.range_ and \
                     vector_angle((obj.x - self.owner.x, obj.y - self.owner.y), self.owner.looking_direction) >= self.cosa:
-                obj.damage(20)
-                obj.move_move(Move(obj.x - sx, obj.y - sy, 10, own_speed=True))
-                obj.move_move(Move(obj.x - sx, obj.y - sy, 7, own_speed=True))
-                obj.move_move(Move(obj.x - sx, obj.y - sy, 4, own_speed=True))
+                obj.damage(self.damage)
+                m1 = Move(obj.x - sx, obj.y - sy, 7, normalize=True)
+                m1.amplify(self.knockback // 7)
+                obj.move_move(Move(obj.x - sx, obj.y - sy, 10, own_speed=True, normalize=True))
+                obj.move_move(m1)
         self.current_cooldown = self.cooldown
         self.image_index = min(len(self.image_list) - 1, 1)
 

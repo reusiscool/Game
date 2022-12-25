@@ -24,6 +24,9 @@ class BaseLoot(ABC):
     def add_amount(self, obj):
         pass
 
+    def tile_pos(self, tile_size):
+        return self.x // tile_size, self.y // tile_size
+
     def update(self, board):
         for obj in board.get_objects(self.pos, self.hitbox_size * 3):
             if self.rect.colliderect(obj.rect) and isinstance(obj, Player):

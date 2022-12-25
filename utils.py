@@ -50,33 +50,33 @@ def draw_line(x0, y0, x1, y1):
     return ans
 
 
-def get_items(self, pos, distance, map_):
-    x, y = pos
-    stx = int((x - distance) // self.tile_size)
-    endx = int((x + distance) // self.tile_size)
-    sty = int((y - distance) // self.tile_size)
-    endy = int((y + distance) // self.tile_size)
-    ls = []
-    for ny in range(sty, endy + 1):
-        if ny not in map_:
-            continue
-        for nx in range(stx, endx + 1):
-            if nx not in map_[ny]:
-                continue
-            for b in map_[ny][nx]:
-                ls.append(b)
-    return ls
-
-
-def add_item(self, obj, map_):
-    x, y = obj.pos
-    x //= self.tile_size
-    y //= self.tile_size
-    if y not in map_:
-        map_[y] = {}
-    if x not in map_[y]:
-        map_[y][x] = []
-    map_[y][x].append(obj)
+# def get_items(self, pos, distance, map_):
+#     x, y = pos
+#     stx = int((x - distance) // self.tile_size)
+#     endx = int((x + distance) // self.tile_size)
+#     sty = int((y - distance) // self.tile_size)
+#     endy = int((y + distance) // self.tile_size)
+#     ls = []
+#     for ny in range(sty, endy + 1):
+#         if ny not in map_:
+#             continue
+#         for nx in range(stx, endx + 1):
+#             if nx not in map_[ny]:
+#                 continue
+#             for b in map_[ny][nx]:
+#                 ls.append(b)
+#     return ls
+#
+#
+# def add_item(self, obj, map_):
+#     x, y = obj.pos
+#     x //= self.tile_size
+#     y //= self.tile_size
+#     if y not in map_:
+#         map_[y] = {}
+#     if x not in map_[y]:
+#         map_[y][x] = []
+#     map_[y][x].append(obj)
 
 
 @njit
@@ -163,6 +163,23 @@ def draw_rect_line(p1, p2):
     else:
         for y in range(y2, y1 + 1):
             s.add((x2, y))
+    return s
+
+
+def draw_rect_line2(p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    s = set()
+    if x1 > x2:
+        x1, y1, x2, y2 = x2, y2, x1, y1
+    for x in range(x1, x2 + 1):
+        s.add((x, y2))
+    if y1 < y2:
+        for y in range(y1, y2 + 1):
+            s.add((x1, y))
+    else:
+        for y in range(y2, y1 + 1):
+            s.add((x1, y))
     return s
 
 

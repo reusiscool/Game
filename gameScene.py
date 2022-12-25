@@ -4,7 +4,6 @@ import pygame
 from converters import mum_convert, back_convert
 from board import Board
 from camera import Camera
-from enemy import Enemy
 from player import Player
 from particles import Particle
 from uigame import UIGame
@@ -24,15 +23,13 @@ class GameScene:
         self.camera = Camera([0, 0])
         ls = []
         for i in range(17):
-            for j in range(7):
+            for _ in range(7):
                 ls.append(load_image('player', f'player{i}.png', color_key='white'))
         self.player = Player((0, 0), 15, ls, 4)
         self.parts: list[Particle] = []
         self.board = Board(100, self.player)
         self.board.add_entity(self.player)
         self.gameui = UIGame(self.player, (self.W // 2, self.H // 2))
-        # for i in range(10):
-        #     self.board.add_entity(Enemy((500 + i * 15, 500), 5, [load_image('grass.jpg')], 2, health=100))
 
     def check_controls(self):
         keys = pygame.key.get_pressed()
@@ -44,7 +41,7 @@ class GameScene:
         d = keys[pygame.K_d]
         w = keys[pygame.K_w]
         a = keys[pygame.K_a]
-        if not (a + d + w + s):
+        if not a + d + w + s:
             return
         if keys[pygame.K_LSHIFT]:
             self.player.dash(s - w + d - a, s - w - d + a)

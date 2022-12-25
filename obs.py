@@ -5,7 +5,6 @@ from converters import mum_convert
 class Obs:
     def __init__(self, pos, width=0, img=None):
         self.x, self.y = pos
-        self.pos = pos
         self.rect = pygame.rect.Rect(*pos, width, width)
         self.texture = img
 
@@ -16,6 +15,13 @@ class Obs:
     @property
     def off_y(self):
         return 0
+
+    @property
+    def pos(self):
+        return self.x, self.y
+
+    def tile_pos(self, tile_size):
+        return self.x // tile_size, self.y // tile_size
 
     def render(self, surf: pygame.Surface, camera_x, camera_y):
         if not self.texture:

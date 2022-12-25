@@ -2,8 +2,8 @@ from entity import Entity
 from move import Move
 from states import Stat
 from utils import normalize, load_image
-from sword import Sword
-from gun import Gun
+from sword import Sword, SwordStats
+from ability import Ability
 
 
 class Player(Entity):
@@ -12,10 +12,12 @@ class Player(Entity):
         self.dash_cooldown = 40
         self.dash_current_cooldown = 0
         self.dash_speed = 3
-        sw = Sword([load_image('sword', 'sword.png', color_key='white')], self)
-        sw.range_ = 50
-        self.weapon_list = [Sword([load_image('sword', 'sword.png', color_key='white')], self), sw]
-        self.abbility = Gun([load_image('sword', 'sword.png', color_key='white')], self)
+        sw_st1 = SwordStats(25, 45, 40, 40, 30)
+        sw_st2 = SwordStats(10, 100, 45, 60, 60)
+        imgs = [load_image('sword', 'sword.png', color_key='white')]
+        self.weapon_list = [Sword(imgs, self, sw_st1),
+                            Sword(imgs, self, sw_st2)]
+        self.abbility = Ability([load_image('sword', 'sword.png', color_key='white')], self)
         self.try_attack = False
         self.try_sec_attack = False
         self.stats[Stat.Mana] = max_mana
@@ -66,7 +68,7 @@ class Player(Entity):
 
     def move_input(self, x, y):
         # self.looking_direction = (x, y)
-        self.move_coords(x, y, own_speed=True)
+        self.move_move(Move(x, y, own_speed=True, normalize=True))
 
     def dash(self, dx, dy):
         dx, dy = normalize(dx, dy)

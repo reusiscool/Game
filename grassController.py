@@ -3,7 +3,7 @@ import pygame
 
 from converters import mum_convert
 from grass import Grass
-from utils import load_image, get_items
+from utils import load_image
 
 
 class GrassController:
@@ -15,7 +15,7 @@ class GrassController:
         self.chunk_size = chunksize
         self.grass_text_list = [load_image('grass', f'grass_{i}.png', color_key='black') for i in range(6)]
         self.cached_surfs = []
-        self.grass_chunks = dict()
+        self.grass_chunks: dict[tuple, list] = {}
         self.time = 0
         self.speed = 0.5
         self.addition = 15
@@ -23,11 +23,10 @@ class GrassController:
     def put(self, pos, ind):
         dx = pos[0] // self.tile_size
         dy = pos[1] // self.tile_size
-        if dy not in self.grass_chunks:
-            self.grass_chunks[dy] = dict()
-        if dx not in self.grass_chunks[dy]:
-            self.grass_chunks[dy][dx] = []
-        self.grass_chunks[dy][dx].append((pos, ind))
+        pos1 = (dx, dy)
+        if pos1 not in self.grass_chunks:
+            self.grass_chunks[pos1] = []
+        self.grass_chunks[pos1].append((pos, ind))
 
     def add_tile(self, pos):
         ind = len(self.cached_surfs)
@@ -41,7 +40,8 @@ class GrassController:
             for j in range(0, self.chunk_size, 3):
                 gr.append(Grass((i, j), choice(self.grass_text_list), self.time_cap // 4, 1))
         for i in range(self.time_cap):
-            surf = pygame.Surface((self.chunk_size + self.addition * 2, self.chunk_size + self.addition * 2))
+            surf = pygame.Surface((self.chunk_size + self.addition * 2,
+                                   self.chunk_size + self.addition * 2))
             surf.set_colorkey('black')
             for g in gr:
                 g.update()
@@ -52,10 +52,15 @@ class GrassController:
     def update(self, force_pos=None):  # todo mb force_pos List
         self.time = 0 if self.time >= self.time_cap - self.speed else self.time + self.speed
 
+    def add_items(self, pos, distance, map_):
+        pass
+
     def retrieve_surfs(self, pos, distance):
         res = []
-        for i in get_items(self, pos, distance, self.grass_chunks):
-            res.append(GrassChunk(i[0], self.cached_surfs[int(i[1])][int(self.time)], self.addition))
+        for i in self.add_items(pos, distance, self.grass_chunks):
+            res.append(GrassChunk(i[0],
+                                  self.cached_surfs[int(i[1])][int(self.time)],
+                                  self.addition))
         return sorted(res, key=lambda o: sum(o.pos))
 
 

@@ -3,7 +3,6 @@ from abc import ABC
 
 from converters import mum_convert
 from move import Move
-from utils import normalize
 from states import Stat
 
 
@@ -22,9 +21,6 @@ class Entity(ABC):
     @property
     def rect(self):
         return pygame.rect.Rect(self.x, self.y, self.hitbox_size, self.hitbox_size)
-
-    def move_coords(self, x, y, dur=1, own_speed=False):
-        self.move_q.append(Move(x, y, dur, own_speed=own_speed))
 
     def move_move(self, move: Move):
         self.move_q.append(move)
@@ -68,14 +64,16 @@ class Entity(ABC):
     def pos(self):
         return self.x, self.y
 
+    def tile_pos(self, tile_size):
+        return self.x // tile_size, self.y // tile_size
+
     def calc_movement(self):
         dx = 0
         dy = 0
         for mov in self.move_q:
             if mov.own_speed:
-                sx, sy = normalize(*mov.pos)
-                dx += sx * self.stats[Stat.Speed]
-                dy += sy * self.stats[Stat.Speed]
+                dx += mov.dx * self.stats[Stat.Speed]
+                dy += mov.dy * self.stats[Stat.Speed]
                 continue
             dx += mov.dx
             dy += mov.dy
@@ -105,3 +103,6 @@ class Entity(ABC):
         off_x = img.get_width() // 2
         off_y = img.get_height()
         surf.blit(img, (x - camera_x - off_x, y - camera_y - off_y + self.hitbox_size // 2))
+
+    def nudge(self):
+        self.move_q.append(Move(0.001, 0.001, 1))

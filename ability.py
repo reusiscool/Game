@@ -7,7 +7,7 @@ from states import Stat
 from utils import normalize
 
 
-class Gun(BaseWeapon):
+class Ability(BaseWeapon):
     def __init__(self, image_list: list[pygame.Surface], owner: Entity):
         super().__init__(image_list, owner)
         self.cooldown = 10
