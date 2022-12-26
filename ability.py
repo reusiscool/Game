@@ -3,7 +3,6 @@ import pygame
 from baseWeapon import BaseWeapon
 from entity import Entity
 from baseProjectile import BaseProjectile
-from states import Stat
 from utils import normalize
 
 
@@ -14,9 +13,9 @@ class Ability(BaseWeapon):
         self.cost = 10
 
     def attack(self, board):
-        if self.current_cooldown or self.owner.stats[Stat.Mana] < self.cost:
+        if self.current_cooldown or self.owner.mana < self.cost:
             return
-        self.owner.stats[Stat.Mana] -= self.cost
+        self.owner.mana -= self.cost
         self.current_cooldown = self.cooldown
         bsurf = pygame.Surface((10, 10))
         bsurf.fill('red')

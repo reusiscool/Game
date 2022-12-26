@@ -4,8 +4,9 @@ import pygame
 from converters import mum_convert, back_convert
 from board import Board
 from camera import Camera
+from entity import EntityStats
 from minimap import Minimap
-from player import Player
+from player import Player, PlayerStats
 from particles import Particle
 from uigame import UIGame
 from utils import load_image, normalize
@@ -26,7 +27,8 @@ class GameScene:
         for i in range(17):
             for _ in range(7):
                 ls.append(load_image('player', f'player{i}.png', color_key='white'))
-        self.player = Player((0, 0), 15, ls, 4)
+        ps = PlayerStats(EntityStats((0, 0, 5), 4, 100, 100), 100, 100, 30, 3)
+        self.player = Player(ls, ps)
         self.parts: list[Particle] = []
         self.board = Board(100, self.player, 700, 400)
         self.board.add_entity(self.player)

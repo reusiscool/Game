@@ -9,7 +9,7 @@ from move import Move
 from utils import vector_angle, normalize, rotate
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class SwordStats:
     damage: int
     range_: int

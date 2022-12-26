@@ -3,7 +3,7 @@ from layout import Layout
 
 box_size = 40
 
-lk = Layout('haha', 10, box_size)
+lk = Layout('haha', 40)
 lk.generate()
 
 # Pathways

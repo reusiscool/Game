@@ -1,9 +1,10 @@
 from random import randint
 from typing import Protocol
 
+from baseEnemy import EnemyStats
 from baseProjectile import BaseProjectile
 from enemy import Enemy
-from entity import Entity
+from entity import Entity, EntityStats
 from grassController import GrassController
 from levelReader import LevelReader
 from obs import Obs, Wall
@@ -51,7 +52,9 @@ class Board:
             self.add_item(Wall((x * self.tile_size, y * self.tile_size), 0, surf), self.collider_map)
             self.add(Obs((x * self.tile_size, y * self.tile_size), self.tile_size))
         for x, y in self.reader.get_enemies():
-            en = Enemy((x * self.tile_size + randint(0, 30) - 15, y * self.tile_size), 5, [load_image('grass.jpg')], 5, health=100)
+            ents = EntityStats((x * self.tile_size + randint(0, 30) - 15, y * self.tile_size, 5), 6, 70, 70)
+            es = EnemyStats(ents, 200, 50, 20, 20)
+            en = Enemy([load_image('grass.jpg')], es)
             en.nudge()
             self.add_entity(en)
         player.x, player.y = self.reader.player_room

@@ -1,19 +1,30 @@
+from dataclasses import dataclass
+
 import pygame
 from abc import ABC
 
 from converters import mum_convert
 from move import Move
-from states import Stat
+
+
+@dataclass(frozen=True)
+class EntityStats:
+    """square: (x0, y0, width)"""
+    square: tuple
+    speed: int
+    health: int
+    max_health: int
 
 
 class Entity(ABC):
-    def __init__(self, pos, hitbox_size, image_list: list[pygame.Surface], speed=2, health=0, max_health=0):
-        self.x, self.y = pos
-        self.hitbox_size = hitbox_size
+    def __init__(self, image_list: list[pygame.Surface], ents: EntityStats):
+        self.x, self.y, self.hitbox_size = ents.square
         self.image_list = image_list
         self.image_index = 0
         self.move_q: list[Move] = []
-        self.stats = {Stat.Health: health, Stat.MaxHealth: max_health, Stat.Speed: speed}
+        self.speed = ents.speed
+        self.health = ents.health
+        self.max_health = ents.max_health
         self.looking_direction = (0, 0)
         self.collided = False
 
@@ -42,7 +53,7 @@ class Entity(ABC):
     def damage(self, amount):
         if amount < 0:
             return
-        self.stats[Stat.Health] = max(0, self.stats[Stat.Health] - amount)
+        self.health = max(0, self.health - amount)
 
     def _move_y(self, dy, map_):
         if not dy:
@@ -71,8 +82,8 @@ class Entity(ABC):
         dy = 0
         for mov in self.move_q:
             if mov.own_speed:
-                dx += mov.dx * self.stats[Stat.Speed]
-                dy += mov.dy * self.stats[Stat.Speed]
+                dx += mov.dx * self.speed
+                dy += mov.dy * self.speed
                 continue
             dx += mov.dx
             dy += mov.dy
@@ -88,7 +99,7 @@ class Entity(ABC):
         ls = board.get_objects(self.pos, 100)
         self._move_x(dx, ls)
         self._move_y(dy, ls)
-        if self.stats[Stat.Health] > 0:
+        if self.health > 0:
             board.add_entity(self)
 
     def render(self, surf: pygame.Surface, camera_x, camera_y):

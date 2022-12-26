@@ -1,17 +1,31 @@
-from entity import Entity
+from dataclasses import dataclass
+
+from entity import Entity, EntityStats
 from move import Move
-from states import Stat
 from utils import normalize, load_image
 from sword import Sword, SwordStats
 from ability import Ability
 
 
+@dataclass(frozen=True, slots=True)
+class PlayerStats:
+    ents: EntityStats
+    mana: int
+    max_mana: int
+    dash_cooldown: int
+    dash_speed: int
+    gold: int = 0
+
+
 class Player(Entity):
-    def __init__(self, pos, hitbox_size, image_list, speed, max_health=100, max_mana=100):
-        super().__init__(pos, hitbox_size, image_list, speed, max_health, max_health)
-        self.dash_cooldown = 40
+    def __init__(self, hitbox_size, ps: PlayerStats):
+        super().__init__(hitbox_size, ps.ents)
+        self.dash_cooldown = ps.dash_cooldown
         self.dash_current_cooldown = 0
-        self.dash_speed = 3
+        self.dash_speed = ps.dash_speed
+        self.mana = ps.mana
+        self.max_mana = ps.max_mana
+        self.gold = ps.gold
         sw_st1 = SwordStats(25, 45, 40, 40, 30)
         sw_st2 = SwordStats(10, 100, 45, 60, 60)
         imgs = [load_image('sword', 'sword.png', color_key='white')]
@@ -20,8 +34,6 @@ class Player(Entity):
         self.abbility = Ability([load_image('sword', 'sword.png', color_key='white')], self)
         self.try_attack = False
         self.try_sec_attack = False
-        self.stats[Stat.Mana] = max_mana
-        self.stats[Stat.MaxMana] = max_mana
         self.weapon_index = False
         self.looking_direction = (1, 1)
 
@@ -44,8 +56,8 @@ class Player(Entity):
         for mov in self.move_q:
             if mov.own_speed:
                 sx, sy = normalize(*mov.pos)
-                dx += sx * self.stats[Stat.Speed] * (1 - self.dash_current_cooldown / self.dash_cooldown) ** 0.5
-                dy += sy * self.stats[Stat.Speed] * (1 - self.dash_current_cooldown / self.dash_cooldown) ** 0.5
+                dx += sx * self.speed * (1 - self.dash_current_cooldown / self.dash_cooldown) ** 0.5
+                dy += sy * self.speed * (1 - self.dash_current_cooldown / self.dash_cooldown) ** 0.5
                 continue
             dx += mov.dx
             dy += mov.dy

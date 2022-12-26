@@ -1,7 +1,6 @@
 import pygame
 
 from player import Player
-from states import Stat
 
 
 class UIGame:
@@ -24,10 +23,10 @@ class UIGame:
         pygame.draw.rect(surf, 'grey', self.hp)
         pygame.draw.rect(surf, 'grey', self.mana)
         pygame.draw.rect(surf, 'red', pygame.Rect(self.hp.x, self.hp.y,
-                                                  self.player.stats[Stat.Health] * self.hp.width / self.player.stats[Stat.MaxHealth],
+                                                  self.player.health * self.hp.width / self.player.max_health,
                                                   self.hp.height))
         pygame.draw.rect(surf, 'blue', pygame.Rect(self.mana.x, self.mana.y,
-                                                   self.player.stats[Stat.Mana] * self.mana.width / self.player.stats[Stat.MaxMana],
+                                                   self.player.mana * self.mana.width / self.player.max_mana,
                                                    self.mana.height))
         if self.player.weapon_index:
             r = pygame.Rect(self.slot2.x - self.gap // 2, self.slot2.y - self.gap // 2,
