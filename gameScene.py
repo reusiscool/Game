@@ -4,6 +4,7 @@ import pygame
 from converters import mum_convert, back_convert
 from board import Board
 from camera import Camera
+from minimap import Minimap
 from player import Player
 from particles import Particle
 from uigame import UIGame
@@ -27,9 +28,10 @@ class GameScene:
                 ls.append(load_image('player', f'player{i}.png', color_key='white'))
         self.player = Player((0, 0), 15, ls, 4)
         self.parts: list[Particle] = []
-        self.board = Board(100, self.player)
+        self.board = Board(100, self.player, 700, 400)
         self.board.add_entity(self.player)
         self.gameui = UIGame(self.player, (self.W // 2, self.H // 2))
+        self.minimap = Minimap(self.board.reader.map_)
 
     def check_controls(self):
         keys = pygame.key.get_pressed()
@@ -55,7 +57,8 @@ class GameScene:
         self.display.blit(fps_t, (0, 0))
 
     def update(self):
-        self.board.update(self.player.pos, 500)
+        self.board.update()
+        self.minimap.update(self.board)
         # for i in self.board.get_entities(self.player.pos, 500):
         #     if i.collided:
         #         self.add_particle(i.pos)
@@ -71,11 +74,13 @@ class GameScene:
     def render(self):
         nx, ny = self.camera.pos
         nx, ny = back_convert(nx + self.W // 4, ny + self.H // 4)
-        self.board.render(self.display, *self.camera.pos, 450, nx, ny)
+        self.board.render(self.display, *self.camera.pos, nx, ny)
         for i in range(len(self.parts) - 1, -1, -1):
             if not self.parts[i].render(self.display, *self.camera.pos):
                 self.parts.pop(i)
         self.gameui.render(self.display)
+        if pygame.key.get_pressed()[pygame.K_TAB]:
+            self.minimap.render(self.display)
 
     def run(self):
         while True:
@@ -86,7 +91,7 @@ class GameScene:
                     return Scene.TitleScene
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
                     self.player.attack()
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_TAB:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                     self.player.change_weapon()
             x, y = self.player.pos
             x1, y1 = mum_convert(x, y)

@@ -33,7 +33,7 @@ class Layout:
                 else:
                     break
             ls.append(r)
-        map_ = numpy.zeros((self.size, self.size), dtype=numpy.int32)
+        map_ = numpy.zeros((self.size, self.size), dtype=numpy.int8)
         for r in ls:
             x1, y1 = r.topleft
             x2, y2 = r.bottomright

@@ -10,7 +10,7 @@ from layout import Layout
 class LevelReader:
     def __init__(self, level: Layout):
         self.level = level
-        # self.level.generate()
+        self.level.generate()
         self.map_ = self.level.map_
         self.enemies = []
         self.player_room = (0, 0)

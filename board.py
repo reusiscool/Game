@@ -33,14 +33,16 @@ class UpdatableEntity(CollisionEntity, Protocol):
 
 
 class Board:
-    def __init__(self, tile_size, player):
+    def __init__(self, tile_size, player, simulation_distance, render_distance):
+        self.render_distance = render_distance
+        self.update_distance = simulation_distance
         self.player = player
         self.tile_size = tile_size
         self.collider_map: dict[tuple, list[CollisionEntity]] = {}
         self.update_map: dict[tuple, list[UpdatableEntity]] = {}
         self.floor_map: dict[tuple, list[Obs]] = {}
         self.projectiles: list[BaseProjectile] = []
-        self.reader = LevelReader(Layout.read_from('1'))
+        self.reader = LevelReader(Layout('1', 40))
         self.gc = GrassController(10, self.tile_size, 10)
         for x, y, surf in self.reader.get_floor():
             obj = Obs((x * self.tile_size, y * self.tile_size), 0, surf)
@@ -123,20 +125,20 @@ class Board:
                 return False
         return True
 
-    def update(self, pos, distance):
+    def update(self):
         for i in self.projectiles:
             i.update(self)
-        for i in self.get_entities(pos, distance):
+        for i in self.get_entities(self.player.pos, self.update_distance):
             i.update(self)
         self.gc.update()
 
-    def render(self, surf, camera_x, camera_y, distance, x, y):
-        for floor in self.get_items((x, y), distance, self.floor_map):
+    def render(self, surf, camera_x, camera_y, x, y):
+        for floor in self.get_items((x, y), self.render_distance, self.floor_map):
             floor.render(surf, camera_x, camera_y)
-        stx = int((x - distance) // self.tile_size)
-        endx = int((x + distance) // self.tile_size)
-        sty = int((y - distance) // self.tile_size)
-        endy = int((y + distance) // self.tile_size)
+        stx = int((x - self.render_distance) // self.tile_size)
+        endx = int((x + self.render_distance) // self.tile_size)
+        sty = int((y - self.render_distance) // self.tile_size)
+        endy = int((y + self.render_distance) // self.tile_size)
         proj_map = {}
         for i in self.projectiles:
             self.add_item(i, proj_map)

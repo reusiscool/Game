@@ -8,8 +8,7 @@ from states import Stat
 
 class Entity(ABC):
     def __init__(self, pos, hitbox_size, image_list: list[pygame.Surface], speed=2, health=0, max_health=0):
-        self.x = pos[0]
-        self.y = pos[1]
+        self.x, self.y = pos
         self.hitbox_size = hitbox_size
         self.image_list = image_list
         self.image_index = 0
@@ -65,7 +64,7 @@ class Entity(ABC):
         return self.x, self.y
 
     def tile_pos(self, tile_size):
-        return self.x // tile_size, self.y // tile_size
+        return int(self.x // tile_size), int(self.y // tile_size)
 
     def calc_movement(self):
         dx = 0
