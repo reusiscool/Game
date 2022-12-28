@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from typing import Tuple
 
-import pygame
 from abc import ABC
-
 from converters import mum_convert
 from move import Move
+from enum import Enum
+import pygame
 
 
 @dataclass(frozen=True)
@@ -14,6 +15,12 @@ class EntityStats:
     speed: int
     health: int
     max_health: int
+
+
+class Team(Enum):
+    Enemy = 1
+    Player = 2
+    Null = 3
 
 
 class Entity(ABC):
@@ -27,6 +34,7 @@ class Entity(ABC):
         self.max_health = ents.max_health
         self.looking_direction = (0, 0)
         self.collided = False
+        self.team = Team.Null
 
     @property
     def rect(self):
@@ -71,7 +79,7 @@ class Entity(ABC):
                 self.y = rect.y
 
     @property
-    def pos(self):
+    def pos(self) -> Tuple[float, float]:
         return self.x, self.y
 
     def tile_pos(self, tile_size):

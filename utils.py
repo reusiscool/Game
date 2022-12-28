@@ -50,35 +50,6 @@ def draw_line(x0, y0, x1, y1):
     return ans
 
 
-# def get_items(self, pos, distance, map_):
-#     x, y = pos
-#     stx = int((x - distance) // self.tile_size)
-#     endx = int((x + distance) // self.tile_size)
-#     sty = int((y - distance) // self.tile_size)
-#     endy = int((y + distance) // self.tile_size)
-#     ls = []
-#     for ny in range(sty, endy + 1):
-#         if ny not in map_:
-#             continue
-#         for nx in range(stx, endx + 1):
-#             if nx not in map_[ny]:
-#                 continue
-#             for b in map_[ny][nx]:
-#                 ls.append(b)
-#     return ls
-#
-#
-# def add_item(self, obj, map_):
-#     x, y = obj.pos
-#     x //= self.tile_size
-#     y //= self.tile_size
-#     if y not in map_:
-#         map_[y] = {}
-#     if x not in map_[y]:
-#         map_[y][x] = []
-#     map_[y][x].append(obj)
-
-
 @njit
 def vector_len(vec):
     return (vec[0] ** 2 + vec[1] ** 2) ** 0.5

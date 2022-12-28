@@ -36,7 +36,7 @@ class BaseProjectile:
             if obj == self.owner:
                 continue
             if rect.colliderect(obj.rect):
-                if isinstance(obj, Entity):
+                if isinstance(obj, Entity) and obj.team != self.owner.team:
                     obj.damage(self.damage)
                 self.time = self.lifetime + 1
 
@@ -49,7 +49,7 @@ class BaseProjectile:
             if obj == self.owner:
                 continue
             if rect.colliderect(obj.rect):
-                if isinstance(obj, Entity):
+                if isinstance(obj, Entity) and obj.team != self.owner.team:
                     obj.damage(self.damage)
                 self.time = self.lifetime + 1
 

@@ -4,10 +4,12 @@ from typing import Protocol
 from baseEnemy import EnemyStats
 from baseProjectile import BaseProjectile
 from enemy import Enemy
+from enemyAI import EnemyAI
 from entity import Entity, EntityStats
 from grassController import GrassController
 from levelReader import LevelReader
 from obs import Obs, Wall
+from shootingEnemy import ShootingEnemy
 from utils import collides, vector_len, load_image
 from layout import Layout
 
@@ -34,16 +36,18 @@ class UpdatableEntity(CollisionEntity, Protocol):
 
 
 class Board:
-    def __init__(self, tile_size, player, simulation_distance, render_distance):
+    def __init__(self, tile_size, player, update_distance, render_distance):
         self.render_distance = render_distance
-        self.update_distance = simulation_distance
+        self.update_distance = update_distance
         self.player = player
         self.tile_size = tile_size
         self.collider_map: dict[tuple, list[CollisionEntity]] = {}
         self.update_map: dict[tuple, list[UpdatableEntity]] = {}
+        self.enemy_map: dict[tuple, list[UpdatableEntity]] = {}
+        self.enemyAI = EnemyAI()
         self.floor_map: dict[tuple, list[Obs]] = {}
         self.projectiles: list[BaseProjectile] = []
-        self.reader = LevelReader(Layout('1', 40))
+        self.reader = LevelReader(Layout('1', 20))
         self.gc = GrassController(10, self.tile_size, 10)
         for x, y, surf in self.reader.get_floor():
             obj = Obs((x * self.tile_size, y * self.tile_size), 0, surf)
@@ -52,11 +56,11 @@ class Board:
             self.add_item(Wall((x * self.tile_size, y * self.tile_size), 0, surf), self.collider_map)
             self.add(Obs((x * self.tile_size, y * self.tile_size), self.tile_size))
         for x, y in self.reader.get_enemies():
-            ents = EntityStats((x * self.tile_size + randint(0, 30) - 15, y * self.tile_size, 5), 6, 70, 70)
-            es = EnemyStats(ents, 200, 50, 20, 20)
-            en = Enemy([load_image('grass.jpg')], es)
+            ents = EntityStats((x * self.tile_size + randint(0, 30) - 15, y * self.tile_size, 5), 3, 70, 70)
+            es = EnemyStats(ents, 250, 150, 20, 20, 100)
+            en = ShootingEnemy([load_image('grass.jpg')], es)
             en.nudge()
-            self.add_entity(en)
+            self.add_enemy(en)
         player.x, player.y = self.reader.player_room
         player.x *= self.tile_size
         player.y *= self.tile_size
@@ -95,6 +99,14 @@ class Board:
         self.add_item(obj, self.update_map)
         self.add(obj)
 
+    def add_enemy(self, obj: UpdatableEntity):
+        self.add_item(obj, self.enemy_map)
+        self.add_entity(obj)
+
+    def pop_enemy(self, obj: UpdatableEntity):
+        self.pop_item(obj, self.enemy_map)
+        self.pop_entity(obj)
+
     def add(self, obj: CollisionEntity):
         self.add_item(obj, self.collider_map)
 
@@ -105,30 +117,17 @@ class Board:
         self.pop(obj)
         self.pop_item(obj, self.update_map)
 
+    def get_enemies(self, pos, distance):
+        return self.get_items(pos, distance, self.enemy_map)
+
     def get_entities(self, pos, distance) -> list[UpdatableEntity]:
         return self.get_items(pos, distance, self.update_map)
 
     def get_objects(self, pos, distance) -> list[CollisionEntity]:
         return self.get_items(pos, distance, self.collider_map)
 
-    def has_clear_sight(self, entity1: Entity, entity2: Entity = None) -> bool:
-        if entity2 is None:
-            entity2 = self.player
-
-        cx, cy = (entity1.x + entity2.x) / 2, (entity1.y + entity2.y) / 2
-        d = vector_len((entity1.x - entity2.x, entity1.y - entity2.y)) / 2
-        p1, p2 = entity1.pos, entity2.pos
-        p1 = tuple(int(i) for i in p1)
-        p2 = tuple(int(i) for i in p2)
-
-        for obj in self.get_objects((cx, cy), d):
-            if obj in (entity1, entity2):
-                continue
-            if collides(p1, p2, *map(int, (*obj.rect.topleft, *obj.rect.size))):
-                return False
-        return True
-
     def update(self):
+        self.enemyAI.update(self)
         for i in self.projectiles:
             i.update(self)
         for i in self.get_entities(self.player.pos, self.update_distance):

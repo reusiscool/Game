@@ -12,8 +12,12 @@ class Move:
     normalize: bool = False
 
     def __post_init__(self):
-        if self.normalize:
+        if self.normalize or self.own_speed:
             self.dx, self.dy = normalize(*self.pos)
+
+    @property
+    def vector(self):
+        return self.dx, self.dy
 
     @property
     def pos(self):

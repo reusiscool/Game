@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from entity import Entity, EntityStats
+from entity import Entity, EntityStats, Team
 from move import Move
 from utils import normalize, load_image
 from sword import Sword, SwordStats
@@ -36,6 +36,7 @@ class Player(Entity):
         self.try_sec_attack = False
         self.weapon_index = False
         self.looking_direction = (1, 1)
+        self.team = Team.Player
 
     def render(self, surf, camera_x, camera_y):
         self.weapon_list[self.weapon_index].render(surf, camera_x, camera_y)
