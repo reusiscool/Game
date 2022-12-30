@@ -14,7 +14,6 @@ class BaseWeapon(ABC):
         self.image_list = image_list
         self.image_index = 0
         self.current_cooldown = 0
-        self.cooldown = None
 
     @abstractmethod
     def attack(self, board):

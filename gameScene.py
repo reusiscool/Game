@@ -41,6 +41,9 @@ class GameScene:
         if keys[pygame.K_SPACE]:
             self.player.secondary_attack()
 
+        if keys[pygame.K_e]:
+            self.player.is_interacting = True
+
         s = keys[pygame.K_s]
         d = keys[pygame.K_d]
         w = keys[pygame.K_w]
@@ -72,6 +75,7 @@ class GameScene:
         y += cy
         x, y = back_convert(x, y)
         self.player.looking_direction = normalize(x - self.player.x, y - self.player.y)
+        self.player.is_interacting = False
 
     def render(self):
         nx, ny = self.camera.pos

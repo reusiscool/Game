@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Tuple
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from converters import mum_convert
 from move import Move
 from enum import Enum
@@ -34,11 +34,15 @@ class Entity(ABC):
         self.max_health = ents.max_health
         self.looking_direction = (0, 0)
         self.collided = False
-        self.team = Team.Null
 
     @property
     def rect(self):
         return pygame.rect.Rect(self.x, self.y, self.hitbox_size, self.hitbox_size)
+
+    @property
+    @abstractmethod
+    def team(self):
+        return ...
 
     def move_move(self, move: Move):
         self.move_q.append(move)

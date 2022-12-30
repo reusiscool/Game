@@ -36,7 +36,11 @@ class Player(Entity):
         self.try_sec_attack = False
         self.weapon_index = False
         self.looking_direction = (1, 1)
-        self.team = Team.Player
+        self.is_interacting = False
+
+    @property
+    def team(self):
+        return Team.Player
 
     def render(self, surf, camera_x, camera_y):
         self.weapon_list[self.weapon_index].render(surf, camera_x, camera_y)

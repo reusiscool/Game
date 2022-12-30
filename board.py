@@ -2,6 +2,7 @@ from random import randint
 from typing import Protocol
 
 from baseEnemy import EnemyStats
+from baseLoot import BaseLoot
 from baseProjectile import BaseProjectile
 from enemy import Enemy
 from enemyAI import EnemyAI
@@ -10,8 +11,10 @@ from grassController import GrassController
 from levelReader import LevelReader
 from obs import Obs, Wall
 from shootingEnemy import ShootingEnemy
+from sword import Sword, SwordStats
 from utils import collides, vector_len, load_image
 from layout import Layout
+from weaponLoot import WeaponLoot
 
 
 class CollisionEntity(Protocol):
@@ -44,6 +47,7 @@ class Board:
         self.collider_map: dict[tuple, list[CollisionEntity]] = {}
         self.update_map: dict[tuple, list[UpdatableEntity]] = {}
         self.enemy_map: dict[tuple, list[UpdatableEntity]] = {}
+        self.loot: dict[tuple, list[BaseLoot]] = {}
         self.enemyAI = EnemyAI()
         self.floor_map: dict[tuple, list[Obs]] = {}
         self.projectiles: list[BaseProjectile] = []
@@ -61,6 +65,13 @@ class Board:
             en = ShootingEnemy([load_image('grass.jpg')], es)
             en.nudge()
             self.add_enemy(en)
+        for x, y in self.reader.weapons:
+            x *= self.tile_size
+            y *= self.tile_size
+            sword_stats = SwordStats(50, 100, 30, 20, 0)
+            ls = [load_image('sword', 'sword.png', color_key='white')]
+            sw = Sword(ls, self.player, sword_stats)
+            self.add_loot(WeaponLoot((x, y), ls, sw))
         player.x, player.y = self.reader.player_room
         player.x *= self.tile_size
         player.y *= self.tile_size
@@ -88,6 +99,12 @@ class Board:
         if pos not in map_:
             return
         map_[pos].remove(obj)
+
+    def add_loot(self, obj: BaseLoot):
+        self.add_item(obj, self.loot)
+
+    def pop_loot(self, obj):
+        self.pop_item(obj, self.loot)
 
     def add_projectile(self, obj):
         self.projectiles.append(obj)
@@ -128,6 +145,8 @@ class Board:
 
     def update(self):
         self.enemyAI.update(self)
+        for i in self.get_items(self.player.pos, self.update_distance, self.loot):
+            i.update(self)
         for i in self.projectiles:
             i.update(self)
         for i in self.get_entities(self.player.pos, self.update_distance):
@@ -152,6 +171,8 @@ class Board:
                     ls += self.collider_map[pos]
                 if pos in proj_map:
                     ls += proj_map[pos]
+                if pos in self.loot:
+                    ls += self.loot[pos]
                 ls.sort(key=lambda o: sum(o.pos))
                 for i in ls:
                     i.render(surf, camera_x, camera_y)

@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import pygame
 
+from customFont import single_font
 from entity import Entity, EntityStats, Team
 
 
@@ -33,7 +34,7 @@ class BaseEnemy(Entity, ABC):
         self.cur_attack_time = 0
         self.attack_damage = es.damage
         self.min_distance = es.min_distance
-        self.team = Team.Enemy
+        self.font = single_font('large_font')
 
     def update(self, board):
         board.pop_enemy(self)
@@ -44,6 +45,10 @@ class BaseEnemy(Entity, ABC):
         self._move_y(dy, ls)
         if self.health > 0:
             board.add_enemy(self)
+
+    @property
+    def team(self):
+        return Team.Enemy
 
     @abstractmethod
     def attack(self, *args, **kwargs):

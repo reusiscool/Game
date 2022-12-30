@@ -13,6 +13,7 @@ class LevelReader:
         self.level.generate()
         self.map_ = self.level.map_
         self.enemies = []
+        self.weapons = []
         self.player_room = (0, 0)
         self.floor_img = None
         self.wall_img = None
@@ -51,6 +52,12 @@ class LevelReader:
             if p not in used:
                 self.enemies += [p for _ in range(randint(3, 6))]
                 used.add(p)
+        for i in self.level.rooms:
+            i = tuple(i)
+            if i in used:
+                continue
+            self.weapons.append(i)
+            break
 
     def write(self):
         self.level.write()

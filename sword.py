@@ -22,32 +22,28 @@ class Sword(BaseWeapon):
 
     def __init__(self, image_list: list[pygame.Surface], owner: Entity, sword_stats: SwordStats):
         super().__init__(image_list, owner)
-        self.angle_range = sword_stats.angle
-        self.damage = sword_stats.damage
-        self.cosa = cos(radians(self.angle_range))
-        self.range_ = sword_stats.range_
-        self.cooldown = sword_stats.cooldown
-        self.knockback = sword_stats.knockback
+        self.stats = sword_stats
+        self.cosa = cos(radians(sword_stats.angle))
 
     def get_stats(self):
-        return SwordStats(self.damage, self.range_, self.angle_range, self.cooldown, self.knockback)
+        return self.stats
 
     def attack(self, board):
         if self.current_cooldown:
             return
         sx, sy = self.owner.pos
-        ls = board.get_entities(self.owner.pos, self.range_)
+        ls = board.get_entities(self.owner.pos, self.stats.range_)
         for obj in ls:
             if obj == self.owner:
                 continue
-            if dist(obj.pos, self.owner.pos) <= self.range_ and \
+            if dist(obj.pos, self.owner.pos) <= self.stats.range_ and \
                     vector_angle((obj.x - self.owner.x, obj.y - self.owner.y), self.owner.looking_direction) >= self.cosa:
-                obj.damage(self.damage)
+                obj.damage(self.stats.damage)
                 m1 = Move(obj.x - sx, obj.y - sy, 7, normalize=True)
-                m1.amplify(self.knockback // 7)
+                m1.amplify(self.stats.knockback // 7)
                 obj.move_move(Move(obj.x - sx, obj.y - sy, 10, own_speed=True, normalize=True))
                 obj.move_move(m1)
-        self.current_cooldown = self.cooldown
+        self.current_cooldown = self.stats.cooldown
         self.image_index = min(len(self.image_list) - 1, 1)
 
     def render(self, surf, camera_x, camera_y):
@@ -69,6 +65,6 @@ class Sword(BaseWeapon):
         px, py = mum_convert(*self.owner.pos)
         # nx, ny = self.draw_line((x, y), self.range_)
         # pygame.draw.line(surf, 'orange', (px - cx, py - cy), (nx - cx, ny - cy), 2)
-        for line in rotate((x, y), self.angle_range - 10):
-            nx, ny = self.draw_line(line, self.range_)
+        for line in rotate((x, y), self.stats.angle - 10):
+            nx, ny = self.draw_line(line, self.stats.range_)
             pygame.draw.line(surf, 'orange', (px - cx, py - cy), (nx - cx, ny - cy), 5)

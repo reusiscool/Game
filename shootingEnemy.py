@@ -29,5 +29,5 @@ class ShootingEnemy(BaseEnemy):
     def update(self, board):
         super().update(board)
         if self.health <= 0:
-            board.add_projectile(ManaLoot(self.pos, 20))
+            board.add_loot(ManaLoot(self.pos, 20))
             return
