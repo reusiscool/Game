@@ -4,7 +4,6 @@ import pygame
 
 from baseWeapon import BaseWeapon
 from converters import mum_convert
-from entity import Entity
 from move import Move
 from utils import vector_angle, normalize, rotate
 
@@ -20,24 +19,24 @@ class SwordStats:
 
 class Sword(BaseWeapon):
 
-    def __init__(self, image_list: list[pygame.Surface], owner: Entity, sword_stats: SwordStats):
-        super().__init__(image_list, owner)
+    def __init__(self, image_list: list[pygame.Surface], sword_stats: SwordStats):
+        super().__init__(image_list)
         self.stats = sword_stats
         self.cosa = cos(radians(sword_stats.angle))
 
     def get_stats(self):
         return self.stats
 
-    def attack(self, board):
+    def attack(self, board, owner):
         if self.current_cooldown:
             return
-        sx, sy = self.owner.pos
-        ls = board.get_entities(self.owner.pos, self.stats.range_)
+        sx, sy = owner.pos
+        ls = board.get_entities(owner.pos, self.stats.range_)
         for obj in ls:
-            if obj == self.owner:
+            if obj == owner:
                 continue
-            if dist(obj.pos, self.owner.pos) <= self.stats.range_ and \
-                    vector_angle((obj.x - self.owner.x, obj.y - self.owner.y), self.owner.looking_direction) >= self.cosa:
+            if dist(obj.pos, owner.pos) <= self.stats.range_ and \
+                    vector_angle((obj.x - owner.x, obj.y - owner.y), owner.looking_direction) >= self.cosa:
                 obj.damage(self.stats.damage)
                 m1 = Move(obj.x - sx, obj.y - sy, 7, normalize=True)
                 m1.amplify(self.stats.knockback // 7)
@@ -46,12 +45,12 @@ class Sword(BaseWeapon):
         self.current_cooldown = self.stats.cooldown
         self.image_index = min(len(self.image_list) - 1, 1)
 
-    def render(self, surf, camera_x, camera_y):
-        self.draw_attack_lines(surf, camera_x, camera_y)
+    def render(self, surf, camera_x, camera_y, owner):
+        self.draw_attack_lines(surf, camera_x, camera_y, owner)
         img = self.image_list[self.image_index]
-        x, y = mum_convert(*self.owner.pos)
+        x, y = mum_convert(*owner.pos)
         off_x = img.get_width() // 2 + self.weapon_x_offset
-        if not self.owner.looking_direction[0] < self.owner.looking_direction[1]:
+        if not owner.looking_direction[0] < owner.looking_direction[1]:
             img = pygame.transform.flip(img, True, False)
             off_x -= self.weapon_x_offset * 2
         off_y = img.get_height() + self.weapon_y_offset
@@ -60,11 +59,9 @@ class Sword(BaseWeapon):
             self.image_index += 1
             self.image_index %= len(self.image_list)
 
-    def draw_attack_lines(self, surf, cx, cy):
-        x, y = normalize(*self.owner.looking_direction)
-        px, py = mum_convert(*self.owner.pos)
-        # nx, ny = self.draw_line((x, y), self.range_)
-        # pygame.draw.line(surf, 'orange', (px - cx, py - cy), (nx - cx, ny - cy), 2)
+    def draw_attack_lines(self, surf, cx, cy, owner):
+        x, y = normalize(*owner.looking_direction)
+        px, py = mum_convert(*owner.pos)
         for line in rotate((x, y), self.stats.angle - 10):
-            nx, ny = self.draw_line(line, self.stats.range_)
+            nx, ny = self.draw_line(line, self.stats.range_, owner)
             pygame.draw.line(surf, 'orange', (px - cx, py - cy), (nx - cx, ny - cy), 5)

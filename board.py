@@ -6,14 +6,13 @@ from baseLoot import BaseLoot
 from baseProjectile import BaseProjectile
 from enemy import Enemy
 from enemyAI import EnemyAI
-from entity import Entity, EntityStats
 from grassController import GrassController
+from layout import Layout
 from levelReader import LevelReader
 from obs import Obs, Wall
 from shootingEnemy import ShootingEnemy
 from sword import Sword, SwordStats
-from utils import collides, vector_len, load_image
-from layout import Layout
+from utils import load_image
 from weaponLoot import WeaponLoot
 
 
@@ -51,7 +50,7 @@ class Board:
         self.enemyAI = EnemyAI()
         self.floor_map: dict[tuple, list[Obs]] = {}
         self.projectiles: list[BaseProjectile] = []
-        self.reader = LevelReader(Layout('1', 20))
+        self.reader = LevelReader(Layout('1', 40))
         self.gc = GrassController(10, self.tile_size, 10)
         for x, y, surf in self.reader.get_floor():
             obj = Obs((x * self.tile_size, y * self.tile_size), 0, surf)
@@ -60,9 +59,14 @@ class Board:
             self.add_item(Wall((x * self.tile_size, y * self.tile_size), 0, surf), self.collider_map)
             self.add(Obs((x * self.tile_size, y * self.tile_size), self.tile_size))
         for x, y in self.reader.get_enemies():
-            ents = EntityStats((x * self.tile_size + randint(0, 30) - 15, y * self.tile_size, 5), 3, 70, 70)
-            es = EnemyStats(ents, 250, 150, 20, 20, 100)
-            en = ShootingEnemy([load_image('grass.jpg')], es)
+            if randint(0, 1):
+                es = EnemyStats((x * self.tile_size + randint(0, 30) - 15, y * self.tile_size, 5),
+                                3, 70, 70, 250, 150, 20, 20, 100)
+                en = ShootingEnemy([load_image('grass.jpg')], es)
+            else:
+                es = EnemyStats((x * self.tile_size + randint(0, 30) - 15, y * self.tile_size, 5),
+                                3, 70, 70, 250, 60, 15, 20)
+                en = Enemy([load_image('grass.jpg')], es)
             en.nudge()
             self.add_enemy(en)
         for x, y in self.reader.weapons:
@@ -70,7 +74,7 @@ class Board:
             y *= self.tile_size
             sword_stats = SwordStats(50, 100, 30, 20, 0)
             ls = [load_image('sword', 'sword.png', color_key='white')]
-            sw = Sword(ls, self.player, sword_stats)
+            sw = Sword(ls, sword_stats)
             self.add_loot(WeaponLoot((x, y), ls, sw))
         player.x, player.y = self.reader.player_room
         player.x *= self.tile_size

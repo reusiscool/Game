@@ -35,7 +35,7 @@ class EnemyAI:
     def _update_visibility(self, board):
         for enemy1 in board.get_enemies(board.player.pos, board.update_distance):
             enemy1: BaseEnemy
-            if has_clear_sight(board, enemy1) and dist(board.player.pos, enemy1.pos) <= enemy1.detect_range:
+            if has_clear_sight(board, enemy1) and dist(board.player.pos, enemy1.pos) <= enemy1.stats.detect_range:
                 self.calls_q.append(enemy1.pos)
 
     def _update_behaviour(self, board):
@@ -47,13 +47,13 @@ class EnemyAI:
             dist_to_player = dist((px, py), enemy1.pos)
             if enemy1.cur_attack_time:
                 enemy1.attack(board)
-            if dist_to_player <= enemy1.min_distance:
+            if dist_to_player <= enemy1.stats.min_distance:
                 enemy1.move_move(Move(-vecx, -vecy, own_speed=True))
                 continue
-            if dist_to_player <= enemy1.attack_distance:
+            if dist_to_player <= enemy1.stats.attack_distance:
                 enemy1.cur_attack_time += 1
                 continue
             for pos in self.calls_q:
-                if dist(pos, enemy1.pos) <= enemy1.detect_range:
+                if dist(pos, enemy1.pos) <= enemy1.stats.detect_range:
                     enemy1.move_move(Move(vecx, vecy, own_speed=True))
                     break

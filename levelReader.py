@@ -5,6 +5,7 @@ import os
 
 from enemy import Enemy
 from layout import Layout
+from rooms import Room, RoomType
 
 
 class LevelReader:
@@ -41,23 +42,17 @@ class LevelReader:
                 if cell == 0:
                     yield x, y, self.wall_img
 
-    def get_rand_room(self):
-        return tuple(choice(self.level.rooms))
-
     def gen_mobs(self):
-        self.player_room = self.get_rand_room()
-        used = {self.player_room}
-        for _ in range(len(self.level.rooms) // 2):
-            p = self.get_rand_room()
-            if p not in used:
-                self.enemies += [p for _ in range(randint(3, 6))]
-                used.add(p)
         for i in self.level.rooms:
-            i = tuple(i)
-            if i in used:
-                continue
-            self.weapons.append(i)
-            break
+            i: Room
+            if i.type_ == RoomType.Player:
+                self.player_room = i.rect.center
+            elif i.type_ == RoomType.Combat:
+                self.enemies.append(i.rect.center)
+                self.enemies.append(i.rect.center)
+                self.enemies.append(i.rect.center)
+            elif i.type_ == RoomType.Weapon:
+                self.weapons.append(i.rect.center)
 
     def write(self):
         self.level.write()

@@ -3,18 +3,22 @@ from typing import Tuple
 
 from abc import ABC, abstractmethod
 from converters import mum_convert
+from customFont import single_font
 from move import Move
 from enum import Enum
 import pygame
 
 
-@dataclass(frozen=True)
+@dataclass(slots=True)
 class EntityStats:
     """square: (x0, y0, width)"""
     square: tuple
     speed: int
     health: int
     max_health: int
+
+    def heal(self, amount):
+        self.health = min(self.max_health, self.health + amount)
 
 
 class Team(Enum):
@@ -26,13 +30,13 @@ class Team(Enum):
 class Entity(ABC):
     def __init__(self, image_list: list[pygame.Surface], ents: EntityStats):
         self.x, self.y, self.hitbox_size = ents.square
+        self.stats = ents
         self.image_list = image_list
         self.image_index = 0
         self.move_q: list[Move] = []
-        self.speed = ents.speed
-        self.health = ents.health
-        self.max_health = ents.max_health
         self.looking_direction = (0, 0)
+        self.damage_time = 0
+        self.damage_img = None
         self.collided = False
 
     @property
@@ -65,7 +69,9 @@ class Entity(ABC):
     def damage(self, amount):
         if amount < 0:
             return
-        self.health = max(0, self.health - amount)
+        font = single_font('large_font')
+        self.damage_img = font.render(str(amount))
+        self.stats.health = max(0, self.stats.health - amount)
 
     def _move_y(self, dy, map_):
         if not dy:
@@ -94,8 +100,8 @@ class Entity(ABC):
         dy = 0
         for mov in self.move_q:
             if mov.own_speed:
-                dx += mov.dx * self.speed
-                dy += mov.dy * self.speed
+                dx += mov.dx * self.stats.speed
+                dy += mov.dy * self.stats.speed
                 continue
             dx += mov.dx
             dy += mov.dy
@@ -111,7 +117,7 @@ class Entity(ABC):
         ls = board.get_objects(self.pos, 100)
         self._move_x(dx, ls)
         self._move_y(dy, ls)
-        if self.health > 0:
+        if self.stats.health > 0:
             board.add_entity(self)
 
     def render(self, surf: pygame.Surface, camera_x, camera_y):
@@ -125,6 +131,12 @@ class Entity(ABC):
         off_x = img.get_width() // 2
         off_y = img.get_height()
         surf.blit(img, (x - camera_x - off_x, y - camera_y - off_y + self.hitbox_size // 2))
+        if self.damage_img:
+            surf.blit(self.damage_img, (x - camera_x - off_x, y - camera_y - off_y + self.hitbox_size // 2))
+            self.damage_time += 1
+            if self.damage_time > 10:
+                self.damage_img = None
+                self.damage_time = 0
 
     def nudge(self):
         self.move_q.append(Move(0.001, 0.001, 1))

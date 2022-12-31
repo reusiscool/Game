@@ -2,7 +2,7 @@ import pygame
 
 from basePickable import BasePickable
 from baseWeapon import BaseWeapon
-from customFont import single_font
+from infoDisplay import generate_description
 
 
 class WeaponLoot(BasePickable):
@@ -10,7 +10,6 @@ class WeaponLoot(BasePickable):
         super().__init__(pos, image_list)
         self.weapon = weapon
         self.hitbox_size = 100
-        self.font = single_font('large_font')
         self.desc = pygame.Surface((80, 150))
         self.generate_description()
 
@@ -18,10 +17,7 @@ class WeaponLoot(BasePickable):
         obj.weapon_list[obj.weapon_index] = self.weapon
 
     def generate_description(self):
-        self.font.render(self.desc, 'Weapon', (0, 0))
-        d = self.weapon.stats.__dict__
-        for i, val in enumerate(d):
-            self.font.render(self.desc, f'{val}: {d[val]}', (1, (i + 1) * (self.font.height + 1)))
+        self.desc = generate_description('large_font', self.weapon.stats.__dict__, 'Weapon')
 
     def render(self, surf: pygame.Surface, camera_x, camera_y):
         super().render(surf, camera_x, camera_y)

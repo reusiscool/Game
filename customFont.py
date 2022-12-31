@@ -17,7 +17,7 @@ class CustomFont:
     def __init__(self, font_name: str):
         self.font_name = font_name
         self.height = 0
-        self.characters = {}
+        self.characters: dict[str, pygame.Surface] = {}
         order = self.read_order()
         self.read_font(order)
         self.space_width = 3
@@ -43,8 +43,18 @@ class CustomFont:
             else:
                 cur_width += 1
 
-    def render(self, surf: pygame.Surface, text, pos):
-        x0, y0 = pos
+    def render(self, text):
+        sx = 0
+        sy = self.height
+        for i in text:
+            if i == ' ':
+                sx += self.space_width + 1
+            elif i not in self.characters:
+                continue
+            else:
+                sx += self.characters[i].get_width() + 1
+        sx -= 1
+        surf = pygame.Surface((sx, sy))
         x = 0
         for char in text:
             if char == ' ':
@@ -52,5 +62,6 @@ class CustomFont:
                 continue
             if char not in self.characters:
                 continue
-            surf.blit(self.characters[char], (x0 + x, y0))
+            surf.blit(self.characters[char], (x, 0))
             x += self.characters[char].get_width() + self.spacing
+        return surf

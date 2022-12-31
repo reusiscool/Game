@@ -4,7 +4,8 @@ import pygame
 from converters import mum_convert, back_convert
 from board import Board
 from camera import Camera
-from entity import EntityStats
+from inventory import Inventory
+from healItem import HealItem
 from minimap import Minimap
 from player import Player, PlayerStats
 from particles import Particle
@@ -27,22 +28,22 @@ class GameScene:
         for i in range(17):
             for _ in range(7):
                 ls.append(load_image('player', f'player{i}.png', color_key='white'))
-        ps = PlayerStats(EntityStats((0, 0, 5), 4, 100, 100), 100, 100, 30, 3)
-        self.player = Player(ls, ps)
+        ps = PlayerStats((0, 0, 5), 4, 100, 100, 100, 100, 30, 3)
+        invent = Inventory(7, self.display.get_size())
+        hl = HealItem(20)
+        invent.add_item(hl)
+        self.player: Player = Player(ls, ps, invent)
         self.parts: list[Particle] = []
-        self.board = Board(100, self.player, 700, 400)
+        self.board: Board = Board(100, self.player, 700, self.display.get_width() // 2)
         self.board.add_entity(self.player)
-        self.gameui = UIGame(self.player, (self.W // 2, self.H // 2))
-        self.minimap = Minimap(self.board.reader.map_)
+        self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
+        self.minimap: Minimap = Minimap(self.board.reader.map_, self.board.reader.level.rooms)
 
     def check_controls(self):
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_SPACE]:
             self.player.secondary_attack()
-
-        if keys[pygame.K_e]:
-            self.player.is_interacting = True
 
         s = keys[pygame.K_s]
         d = keys[pygame.K_d]
@@ -76,6 +77,8 @@ class GameScene:
         x, y = back_convert(x, y)
         self.player.looking_direction = normalize(x - self.player.x, y - self.player.y)
         self.player.is_interacting = False
+        if pygame.key.get_pressed()[pygame.K_TAB]:
+            self.player.inventory.update(pygame.mouse.get_pos())
 
     def render(self):
         nx, ny = self.camera.pos
@@ -84,8 +87,10 @@ class GameScene:
         for i in range(len(self.parts) - 1, -1, -1):
             if not self.parts[i].render(self.display, *self.camera.pos):
                 self.parts.pop(i)
-        self.gameui.render(self.display)
+        self.gameui.render(self.display, pygame.mouse.get_pos())
         if pygame.key.get_pressed()[pygame.K_TAB]:
+            self.player.inventory.render(self.display)
+        if pygame.key.get_pressed()[pygame.K_LCTRL]:
             self.minimap.render(self.display)
 
     def run(self):
@@ -96,9 +101,17 @@ class GameScene:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     return Scene.TitleScene
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
-                    self.player.attack()
+                    if pygame.key.get_pressed()[pygame.K_TAB]:
+                        self.player.inventory.use_item(pygame.mouse.get_pos(), self.player)
+                    else:
+                        self.player.attack()
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT:
+                    if pygame.key.get_pressed()[pygame.K_TAB]:
+                        self.player.inventory.discard_item(pygame.mouse.get_pos())
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                     self.player.change_weapon()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
+                    self.player.is_interacting = True
             x, y = self.player.pos
             x1, y1 = mum_convert(x, y)
             self.camera.adjust((x1, y1), self.display.get_size())

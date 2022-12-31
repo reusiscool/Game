@@ -9,7 +9,7 @@ class BaseLoot(ABC):
     def __init__(self, pos, image_list: list[pygame.Surface]):
         self.image_index = 0
         self.x, self.y = pos
-        self.hitbox_size = 5
+        self.hitbox_size = 10
         self.image_list = image_list
 
     @property
@@ -21,7 +21,7 @@ class BaseLoot(ABC):
         return self.x, self.y
 
     @abstractmethod
-    def add_amount(self, obj):
+    def add_amount(self, obj, board):
         pass
 
     def tile_pos(self, tile_size):
@@ -31,7 +31,7 @@ class BaseLoot(ABC):
         for obj in board.get_objects(self.pos, self.hitbox_size * 3):
             if self.rect.colliderect(obj.rect) and isinstance(obj, Player):
                 board.pop_loot(self)
-                self.add_amount(obj)
+                self.add_amount(obj, board)
 
     def render(self, surf, camera_x, camera_y):
         self.image_index += 1

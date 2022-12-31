@@ -1,17 +1,19 @@
-import os
 from math import dist
-import pygame
-import numpy
-from random import randint
+from random import randint, choice
 from scipy.spatial import Delaunay
 from scipy.sparse.csgraph import minimum_spanning_tree
+import os
+import pygame
+import numpy
 import csv
+from rooms import Room, RoomType
 
-from utils import draw_line, draw_rect_line2, draw_rect_line
+from utils import draw_line
 
 
 class Layout:
     def __init__(self, name, size):
+        self.corridors = {}
         self.size = size
         self.name = name
         self.map_ = [[]]
@@ -52,17 +54,22 @@ class Layout:
         min_tree = minimum_spanning_tree(mtrx).toarray().astype(int)
 
         for con in tri.simplices:
-            if randint(0, 6):
+            if randint(0, 10):
                 continue
             a, b, c = con
             min_tree[a, b] = mtrx[b, a] = 1
             min_tree[c, b] = mtrx[b, c] = 1
             min_tree[a, c] = mtrx[c, a] = 1
 
+        corridors = [[] for _ in range(len(min_tree))]
+
         for y in range(len(min_tree)):
             for x in range(len(min_tree)):
                 if x - y > 0:
-                    min_tree[y, x] = min_tree[x, y] or min_tree[y, x]
+                    if min_tree[x, y] or min_tree[y, x]:
+                        min_tree[y, x] = True
+                        corridors[x].append(y)
+                        corridors[y].append(x)
                 else:
                     min_tree[y, x] = False
 
@@ -77,23 +84,9 @@ class Layout:
                 for x5, y5 in draw_line(x1, y1 + 1, x2, y2 + 1):
                     map_[y5, x5] = 1
 
-        # c = True
-        #
-        # for y, row in enumerate(min_tree):
-        #     for x, val in enumerate(row):
-        #         if not val:
-        #             continue
-        #         if c:
-        #             for x5, y5 in draw_rect_line(points[x], points[y]):
-        #                 map_[y5, x5] = 1
-        #                 c = not c
-        #         else:
-        #             for x5, y5 in draw_rect_line2(points[x], points[y]):
-        #                 map_[y5, x5] = 1
-        #                 c = not c
-
         self.map_ = map_
-        self.rooms = points
+        self.corridors = corridors
+        self._assign_rooms(ls, corridors)
 
     @classmethod
     def read_from(cls, name):
@@ -110,11 +103,47 @@ class Layout:
             for row in reader:
                 if not row:
                     continue
-                rooms.append([int(i) for i in row])
+                ls = [int(i) for i in row]
+                rooms.append(Room(pygame.Rect(ls[0], ls[1], ls[2], ls[3]), RoomType(ls[4])))
         inst = Layout(name, len(map_))
         inst.map_ = map_
         inst.rooms = rooms
         return inst
+
+    def _assign_rooms(self, room_rects: list[pygame.Rect], corridors: list[list[int]]):
+        oneway = [RoomType.Weapon, RoomType.Shop, RoomType.DarkShop]
+        twoway = [RoomType.Combat, RoomType.Null]
+        res = [[] for _ in range(len(room_rects))]
+        used = {}
+        for i, d in enumerate(corridors):
+            if i in used:
+                continue
+            if len(d) == 1:
+                rt = choice(oneway)
+                used[i] = rt
+                if rt == RoomType.DarkShop:
+                    next_room = corridors[i][0]
+                    used[next_room] = RoomType.Puzzle
+            else:
+                rt = choice(twoway)
+                used[i] = rt
+        keyd = False
+        portaled = False
+        for i, d in enumerate(corridors):
+            if used[i] == RoomType.Null:
+                if not keyd:
+                    used[i] = RoomType.Key
+                    keyd = True
+                    continue
+                if not portaled:
+                    used[i] = RoomType.Portal
+                    portaled = True
+                    continue
+                used[i] = RoomType.Player
+                break
+        for key in used:
+            res[key] = Room(room_rects[key], used[key])
+        self.rooms = res
 
     def write(self):
         with open(os.path.join('levels', self.name + 'layout.csv'), 'w') as f:
@@ -122,5 +151,6 @@ class Layout:
             writer.writerows(self.map_)
         with open(os.path.join('levels', self.name + 'rooms.csv'), 'w') as f:
             writer = csv.writer(f)
-            writer.writerows(self.rooms)
-
+            for i in self.rooms:
+                writer.writerow((*tuple(i.rect), i.type_.value))
+            # writer.writerows(self.rooms)
