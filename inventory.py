@@ -1,6 +1,6 @@
 import pygame
 
-from baseItem import BaseItem
+from items.baseItem import BaseItem
 
 
 class Inventory:

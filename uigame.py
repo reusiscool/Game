@@ -1,8 +1,8 @@
 import pygame
 
-from customFont import single_font
+from utils.customFont import single_font
 from player import Player
-from infoDisplay import generate_description
+from utils.infoDisplay import generate_description
 
 
 class UIGame:

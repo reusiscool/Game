@@ -1,5 +1,5 @@
 import pygame
-from rooms import Room, RoomType
+from surroundings.rooms import Room
 
 
 class Minimap:
@@ -14,12 +14,11 @@ class Minimap:
             self.textures = textures
         self.player_pos = (0, 0)
         self.gap = self.ts * 15
-        self.surf = pygame.Surface((self.size * self.ts + self.gap * 2, self.size * self.ts + self.gap * 2))
-        self.surf.fill('black')
+        self.surf = pygame.Surface((self.size * self.ts + self.gap * 2, self.size * self.ts + self.gap * 2), pygame.SRCALPHA)
 
     def get_pics(self):
         d = {}
-        colors = ['green', 'white', 'yellow', 'grey', (0, 0, 1), 'purple', 'blue', 'purple', 'white', 'red']
+        colors = ['green', 'white', 'yellow', 'grey', 'black', 'purple', 'blue', 'purple', 'white', 'red']
         for i in range(10):
             s = pygame.Surface((self.ts, self.ts))
             s.fill(colors[i])
@@ -53,9 +52,7 @@ class Minimap:
         px, py = self.player_pos
         dist = self.ts * 15
         surf = self.surf.subsurface(px - dist + self.gap, py - dist + self.gap, 2 * dist, 2 * dist)
-        surf.set_at((0, 0), 'black')
         surf = pygame.transform.rotate(surf, -45)
-        surf.set_colorkey('black')
         return surf
 
     def render(self, surf: pygame.Surface):

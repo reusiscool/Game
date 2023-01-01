@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import Tuple
 
 from abc import ABC, abstractmethod
-from converters import mum_convert
-from customFont import single_font
-from move import Move
+from utils.converters import mum_convert
+from utils.customFont import single_font
+from utils.move import Move
 from enum import Enum
 import pygame
 

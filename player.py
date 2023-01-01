@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
 from entity import Entity, EntityStats, Team
-from move import Move
-from utils import normalize, load_image
-from sword import Sword, SwordStats
-from ability import Ability
+from utils.move import Move
+from utils.utils import normalize, load_image
+from weapons.sword import Sword, SwordStats
+from weapons.ability import Ability
 
 
 @dataclass(slots=True)

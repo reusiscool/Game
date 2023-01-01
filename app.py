@@ -1,8 +1,8 @@
 import pygame
 import sys
-from gameScene import GameScene
-from scene import Scene
-from titleScene import TitleScene
+from scenes.gameScene import GameScene
+from scenes.scene import Scene
+from scenes.titleScene import TitleScene
 
 
 class App:
