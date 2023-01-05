@@ -36,6 +36,8 @@ class Player(Entity):
         self.weapon_index = False
         self.looking_direction = (1, 1)
         self.is_interacting = False
+        self.is_passing = False
+        self.highlighted = False
 
     @property
     def team(self):

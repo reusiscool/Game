@@ -6,7 +6,10 @@ from utils.utils import load_image
 class LevelReader:
     def __init__(self, level: Layout):
         self.level = level
-        self.level.generate()
+        while True:
+            self.level.generate()
+            if RoomType.Player in (i.type_ for i  in self.level.rooms):
+                break
         self.map_ = self.level.map_
         self.enemies = []
         self.weapons = []
@@ -50,9 +53,17 @@ class LevelReader:
                 self.weapons.append(i.rect.center)
 
     @property
-    def key_room(self):
+    def key_rooms(self):
+        c = 0
         for i in self.level.rooms:
             if i.type_ == RoomType.Key:
+                yield i.rect.center, c
+                c += 1
+
+    @property
+    def portal_room(self):
+        for i in self.level.rooms:
+            if i.type_ == RoomType.Portal:
                 return i.rect.center
 
     def write(self):

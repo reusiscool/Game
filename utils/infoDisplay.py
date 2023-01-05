@@ -12,8 +12,6 @@ def generate_description(font_name, obj_stats, title, color="black"):
     sy = (font.height + 1) * len(ls) - 1
     surf = pygame.Surface((sx, sy))
     surf.fill(color)
-    surf.blit(font.render('Weapon'), (0, 0))
-    for i, val in enumerate(obj_stats):
-        s = font.render(f'{val}: {obj_stats[val]}')
-        surf.blit(s, (0, (i + 1) * (font.height + 1)))
+    for i, s in enumerate(ls):
+        surf.blit(s, (0, i * (font.height + 1)))
     return surf

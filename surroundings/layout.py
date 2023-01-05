@@ -27,7 +27,8 @@ class Layout:
         ls = []
         for _ in range(room_num):
             while True:
-                w, h = randint(avg_room_size - 1, avg_room_size + 1), randint(avg_room_size - 1, avg_room_size + 1)
+                w = randint(avg_room_size - 1, avg_room_size + 1)
+                h = randint(avg_room_size - 1, avg_room_size + 1)
                 r = pygame.Rect(randint(0, self.size - 1 - w), randint(0, self.size - 1 - h), w, h)
                 for i in ls:
                     if i.colliderect(r):
@@ -127,13 +128,13 @@ class Layout:
             else:
                 rt = choice(twoway)
                 used[i] = rt
-        keyd = False
+        keys = 2
         portaled = False
         for i, d in enumerate(corridors):
             if used[i] == RoomType.Null:
-                if not keyd:
+                if keys:
                     used[i] = RoomType.Key
-                    keyd = True
+                    keys -= 1
                     continue
                 if not portaled:
                     used[i] = RoomType.Portal

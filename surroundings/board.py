@@ -2,6 +2,7 @@ from random import randint
 from typing import Protocol
 
 from enemies.baseEnemy import EnemyStats
+from interactables.portal import Portal
 from loot.baseLoot import BaseLoot
 from weapons.baseProjectile import BaseProjectile
 from enemies.enemy import Enemy
@@ -14,7 +15,7 @@ from loot.keyItemLoot import KeyItemLoot
 from enemies.shootingEnemy import ShootingEnemy
 from weapons.sword import Sword, SwordStats
 from utils.utils import load_image
-from loot.weaponLoot import WeaponLoot
+from interactables.weaponLoot import WeaponLoot
 
 
 class CollisionEntity(Protocol):
@@ -39,10 +40,10 @@ class UpdatableEntity(CollisionEntity, Protocol):
 
 
 class Board:
-    def __init__(self, tile_size, player, update_distance, render_distance):
+    def __init__(self, tile_size, player_, update_distance, render_distance):
         self.render_distance = render_distance
         self.update_distance = update_distance
-        self.player = player
+        self.player = player_
         self.tile_size = tile_size
         self.collider_map: dict[tuple, list[CollisionEntity]] = {}
         self.update_map: dict[tuple, list[UpdatableEntity]] = {}
@@ -51,12 +52,18 @@ class Board:
         self.enemyAI = EnemyAI()
         self.floor_map: dict[tuple, list[Obs]] = {}
         self.projectiles: list[BaseProjectile] = []
-        self.reader = LevelReader(Layout('1', 40))
+        self.reader = LevelReader(Layout('1', 20))
         self.gc = GrassController(10, self.tile_size, 10)
-        keyx, keyy = self.reader.key_room
+        for room, id_ in self.reader.key_rooms:
+            keyx, keyy = room
+            keyx *= self.tile_size
+            keyy *= self.tile_size
+            self.add_loot(KeyItemLoot((keyx, keyy), id_))
+        keyx, keyy = self.reader.portal_room
         keyx *= self.tile_size
         keyy *= self.tile_size
-        self.add_loot(KeyItemLoot((keyx, keyy), 0))
+        self.add_loot(Portal((keyx, keyy)))
+        self.add(Obs((keyx, keyy), 20))
         for x, y, surf in self.reader.get_floor():
             obj = Obs((x * self.tile_size, y * self.tile_size), 0, surf)
             self.add_item(obj, self.floor_map)
@@ -81,9 +88,10 @@ class Board:
             ls = [load_image('sword', 'sword.png', color_key='white')]
             sw = Sword(ls, sword_stats)
             self.add_loot(WeaponLoot((x, y), ls, sw))
-        player.x, player.y = self.reader.player_room
-        player.x *= self.tile_size
-        player.y *= self.tile_size
+        player_.x, player_.y = self.reader.player_room
+        player_.x *= self.tile_size
+        player_.y *= self.tile_size
+        self.add_entity(player_)
 
     def add_item(self, obj, map_: dict[tuple, list]):
         pos = obj.tile_pos(self.tile_size)
@@ -160,6 +168,8 @@ class Board:
             i.update(self)
         for i in self.get_entities(self.player.pos, self.update_distance):
             i.update(self)
+        self.player.is_interacting = False
+        self.player.highlighted = False
         self.gc.update()
 
     def render(self, surf, camera_x, camera_y, x, y):
@@ -185,4 +195,3 @@ class Board:
                 ls.sort(key=lambda o: sum(o.pos))
                 for i in ls:
                     i.render(surf, camera_x, camera_y)
-
