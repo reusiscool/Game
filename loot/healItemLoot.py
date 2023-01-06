@@ -14,4 +14,4 @@ class HealItemLoot(BaseLoot):
     def add_amount(self, obj, board):
         if obj.inventory.add_item(self.item):
             return
-        board.add_loot(self)
+        board.add_noncollider(self)

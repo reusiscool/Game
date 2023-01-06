@@ -1,9 +1,13 @@
 from random import randint
 from typing import Protocol
 
+import pygame
+
 from enemies.baseEnemy import EnemyStats
 from interactables.portal import Portal
 from loot.baseLoot import BaseLoot
+from puzzles.liarPuzzle import LiarPuzzle
+from puzzles.ticPuzzle import TicTacToePuzzle
 from weapons.baseProjectile import BaseProjectile
 from enemies.enemy import Enemy
 from enemies.enemyAI import EnemyAI
@@ -16,6 +20,8 @@ from enemies.shootingEnemy import ShootingEnemy
 from weapons.sword import Sword, SwordStats
 from utils.utils import load_image
 from interactables.weaponLoot import WeaponLoot
+from .rooms import RoomType
+from .trap import Trap, TrapStats
 
 
 class CollisionEntity(Protocol):
@@ -48,21 +54,21 @@ class Board:
         self.collider_map: dict[tuple, list[CollisionEntity]] = {}
         self.update_map: dict[tuple, list[UpdatableEntity]] = {}
         self.enemy_map: dict[tuple, list[UpdatableEntity]] = {}
-        self.loot: dict[tuple, list[BaseLoot]] = {}
+        self.noncolliders: dict[tuple, list[BaseLoot]] = {}
         self.enemyAI = EnemyAI()
         self.floor_map: dict[tuple, list[Obs]] = {}
         self.projectiles: list[BaseProjectile] = []
-        self.reader = LevelReader(Layout('1', 20))
+        self.reader = LevelReader(Layout('1', 60))
         self.gc = GrassController(10, self.tile_size, 10)
         for room, id_ in self.reader.key_rooms:
             keyx, keyy = room
             keyx *= self.tile_size
             keyy *= self.tile_size
-            self.add_loot(KeyItemLoot((keyx, keyy), id_))
+            self.add_noncollider(KeyItemLoot((keyx, keyy), id_))
         keyx, keyy = self.reader.portal_room
         keyx *= self.tile_size
         keyy *= self.tile_size
-        self.add_loot(Portal((keyx, keyy)))
+        self.add_noncollider(Portal((keyx, keyy)))
         self.add(Obs((keyx, keyy), 20))
         for x, y, surf in self.reader.get_floor():
             obj = Obs((x * self.tile_size, y * self.tile_size), 0, surf)
@@ -87,11 +93,31 @@ class Board:
             sword_stats = SwordStats(50, 100, 30, 20, 0)
             ls = [load_image('sword', 'sword.png', color_key='white')]
             sw = Sword(ls, sword_stats)
-            self.add_loot(WeaponLoot((x, y), ls, sw))
+            self.add_noncollider(WeaponLoot((x, y), ls, sw))
+        for rom in self.reader.get_rooms(RoomType.Puzzle):
+            if randint(0, 1):
+                self.add_noncollider(TicTacToePuzzle(rom.pos_to_tiles(self.tile_size),
+                                                     [KeyItemLoot(rom.pos_to_tiles(self.tile_size), rom.id_)]))
+            else:
+                self.add_noncollider(LiarPuzzle(rom.pos_to_tiles(self.tile_size),
+                                                [KeyItemLoot(rom.pos_to_tiles(self.tile_size), rom.id_)]))
+        for x, y in self.reader.traps:
+            srf1 = pygame.Surface((150, 80))
+            srf1.fill('black')
+            srf2 = pygame.Surface((150, 80))
+            srf2.fill('red')
+            ts = TrapStats(20, 180, pygame.Rect(x * self.tile_size, y * self.tile_size,
+                                                self.tile_size, self.tile_size), 60)
+            self.add_noncollider(Trap(ts, [srf1, srf2]))
         player_.x, player_.y = self.reader.player_room
         player_.x *= self.tile_size
         player_.y *= self.tile_size
         self.add_entity(player_)
+        for gr in self.reader.grass:
+            x, y = gr
+            x *= self.tile_size
+            y *= self.tile_size
+            self.gc.add_tile((x, y))
 
     def add_item(self, obj, map_: dict[tuple, list]):
         pos = obj.tile_pos(self.tile_size)
@@ -117,11 +143,11 @@ class Board:
             return
         map_[pos].remove(obj)
 
-    def add_loot(self, obj: BaseLoot):
-        self.add_item(obj, self.loot)
+    def add_noncollider(self, obj: BaseLoot):
+        self.add_item(obj, self.noncolliders)
 
     def pop_loot(self, obj):
-        self.pop_item(obj, self.loot)
+        self.pop_item(obj, self.noncolliders)
 
     def add_projectile(self, obj):
         self.projectiles.append(obj)
@@ -162,7 +188,7 @@ class Board:
 
     def update(self):
         self.enemyAI.update(self)
-        for i in self.get_items(self.player.pos, self.update_distance, self.loot):
+        for i in self.get_items(self.player.pos, self.update_distance, self.noncolliders):
             i.update(self)
         for i in self.projectiles:
             i.update(self)
@@ -180,8 +206,11 @@ class Board:
         sty = int((y - self.render_distance) // self.tile_size)
         endy = int((y + self.render_distance) // self.tile_size)
         proj_map = {}
+        grass_map = {}
         for i in self.projectiles:
             self.add_item(i, proj_map)
+        for chunk in self.gc.retrieve_surfs((x, y), self.render_distance):
+            self.add_item(chunk, grass_map)
         for ny in range(sty, endy + 1):
             for nx in range(stx, endx + 1):
                 ls = []
@@ -190,8 +219,10 @@ class Board:
                     ls += self.collider_map[pos]
                 if pos in proj_map:
                     ls += proj_map[pos]
-                if pos in self.loot:
-                    ls += self.loot[pos]
+                if pos in self.noncolliders:
+                    ls += self.noncolliders[pos]
+                if pos in grass_map:
+                    ls += grass_map[pos]
                 ls.sort(key=lambda o: sum(o.pos))
                 for i in ls:
                     i.render(surf, camera_x, camera_y)

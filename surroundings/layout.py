@@ -17,7 +17,7 @@ class Layout:
         self.size = size
         self.name = name
         self.map_ = [[]]
-        self.rooms = []
+        self.rooms: list[Room] = []
 
     def generate(self):
         avg_room_size = 6
@@ -38,9 +38,11 @@ class Layout:
             ls.append(r)
         map_ = numpy.zeros((self.size, self.size), dtype=numpy.int8)
         for r in ls:
+            r.move_ip(1, 1)
+            r.inflate_ip(-1, -1)
             x1, y1 = r.topleft
             x2, y2 = r.bottomright
-            map_[y1 + 1:y2, x1 + 1:x2] = 1
+            map_[y1:y2, x1:x2] = 1
 
         points = numpy.array([i.center for i in ls])
         tri = Delaunay(points)
@@ -91,21 +93,21 @@ class Layout:
 
     @classmethod
     def read_from(cls, name):
-        with open(os.path.join('../levels', name + 'layout.csv')) as f:
+        with open(os.path.join('.', 'levels', name + 'layout.csv')) as f:
             reader = csv.reader(f)
             map_ = []
             for row in reader:
                 if not row:
                     continue
                 map_.append([int(i) for i in row])
-        with open(os.path.join('../levels', name + 'rooms.csv')) as f:
+        with open(os.path.join('.', 'levels', name + 'rooms.csv')) as f:
             reader = csv.reader(f)
             rooms = []
             for row in reader:
                 if not row:
                     continue
                 ls = [int(i) for i in row]
-                rooms.append(Room(pygame.Rect(ls[0], ls[1], ls[2], ls[3]), RoomType(ls[4])))
+                rooms.append(Room(pygame.Rect(ls[0], ls[1], ls[2], ls[3]), ls[4], RoomType(ls[5])))
         inst = Layout(name, len(map_))
         inst.map_ = map_
         inst.rooms = rooms
@@ -116,6 +118,7 @@ class Layout:
         twoway = [RoomType.Combat, RoomType.Null]
         res = [[] for _ in range(len(room_rects))]
         used = {}
+        paired = set()
         for i, d in enumerate(corridors):
             if i in used:
                 continue
@@ -125,6 +128,7 @@ class Layout:
                 if rt == RoomType.DarkShop:
                     next_room = corridors[i][0]
                     used[next_room] = RoomType.Puzzle
+                    paired.add((next_room, i))
             else:
                 rt = choice(twoway)
                 used[i] = rt
@@ -142,8 +146,18 @@ class Layout:
                     continue
                 used[i] = RoomType.Player
                 break
+        c = 100
         for key in used:
-            res[key] = Room(room_rects[key], used[key])
+            c += 1
+            if used[key] == RoomType.DarkShop:
+                for roms in paired:
+                    if key in roms:
+                        r1, r2 = roms
+                        res[r1] = Room(room_rects[r1], c, used[r1])
+                        res[r2] = Room(room_rects[r2], c, used[r2])
+                        break
+                continue
+            res[key] = Room(room_rects[key], c, used[key])
         self.rooms = res
 
     def write(self):
@@ -153,5 +167,4 @@ class Layout:
         with open(os.path.join('.', 'levels', self.name + 'rooms.csv'), 'w') as f:
             writer = csv.writer(f)
             for i in self.rooms:
-                writer.writerow((*tuple(i.rect), i.type_.value))
-            # writer.writerows(self.rooms)
+                writer.writerow((*tuple(i.rect), i.id_, i.type_.value))

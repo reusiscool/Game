@@ -52,12 +52,21 @@ class GrassController:
     def update(self, force_pos=None):  # todo mb force_pos List
         self.time = 0 if self.time >= self.time_cap - self.speed else self.time + self.speed
 
-    def add_items(self, pos, distance, map_):
-        pass
+    def get_items(self, pos, distance, map_):
+        x, y = pos
+        ls = []
+        for ny in range(int((y - distance) // self.tile_size), int((y + distance) // self.tile_size) + 1):
+            for nx in range(int((x - distance) // self.tile_size), int((x + distance) // self.tile_size) + 1):
+                pos = (nx, ny)
+                if pos not in map_:
+                    continue
+                map_[pos].sort(key=lambda o: sum(o[0]))
+                ls += map_[pos]
+        return ls
 
     def retrieve_surfs(self, pos, distance):
         res = []
-        for i in self.add_items(pos, distance, self.grass_chunks):
+        for i in self.get_items(pos, distance, self.grass_chunks):
             res.append(GrassChunk(i[0],
                                   self.cached_surfs[int(i[1])][int(self.time)],
                                   self.addition))
@@ -69,6 +78,9 @@ class GrassChunk:
         self.addition = addition
         self.texture = img
         self.pos = pos
+
+    def tile_pos(self, tile_size):
+        return self.pos[0] // tile_size, self.pos[1] // tile_size
 
     def render(self, surf: pygame.Surface, camera_x, camera_y):
         x, y = mum_convert(*self.pos)

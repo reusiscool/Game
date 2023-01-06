@@ -35,7 +35,7 @@ class BaseEnemy(Entity, ABC):
         if self.stats.health > 0:
             board.add_enemy(self)
         elif self.loot_table:
-            board.add_loot(choice(self.loot_table)(self.pos, 20))
+            board.add_noncollider(choice(self.loot_table)(self.pos, 20))
 
     @property
     def team(self):

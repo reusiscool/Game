@@ -1,0 +1,6 @@
+The reward is not in my chest!,One of us is telling the truth!,They are both telling the truth./nThe reward isn't in [Person 1]'s chest.,0
+We are all telling the truth!,At least one of them is lying/nand the reward is not in [Person 3]'s chest.,[Person 1] is telling the truth and the reward is in his chest.,1
+My chest doesn't have the reward./nAt least one of the others is telling the truth!,My chest doesn't have the reward/nwe are all telling the truth.,One of the others is lying.,1
+My chest has the reward and I'm telling the truth!,They are both telling the truth/nthe reward is in [Person 3]'s chest.,They are both lying and the reward is in my chest!,0
+The reward isn't in any of our chests.,The reward is in my chest.,The reward is not in my chest./nThey are both lying.,0
+[Person 2] is telling the truth.,My chest has the reward.,Both of them are telling the truth./nAlso [Person 1] has the reward in their chest.,2

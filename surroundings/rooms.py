@@ -18,4 +18,8 @@ class RoomType(Enum):
 @dataclass(slots=True)
 class Room:
     rect: pygame.Rect
+    id_: int
     type_: RoomType = RoomType.Null
+
+    def pos_to_tiles(self, tile_size):
+        return self.rect.center[0] * tile_size, self.rect.center[1] * tile_size

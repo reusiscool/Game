@@ -33,7 +33,7 @@ class GameScene:
         hl = HealItem(20)
         invent.add_item(hl)
         self.player: Player = Player(ls, ps, invent)
-        self.board: Board = Board(100, self.player, 700, self.display.get_width() // 2)
+        self.board: Board = Board(100, self.player, 700, self.display.get_width() * 3 // 5)
         self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
         self.minimap: Minimap = Minimap(self.board.reader.map_, self.board.reader.level.rooms)
 
@@ -60,7 +60,7 @@ class GameScene:
     def update(self):
         if self.player.is_passing:
             self.player.is_passing = False
-            self.board = Board(100, self.player, 700, self.display.get_width() // 2)
+            self.board = Board(100, self.player, 700, self.display.get_width() * 3 // 5)
             self.minimap: Minimap = Minimap(self.board.reader.map_, self.board.reader.level.rooms)
             return
         x, y = pygame.mouse.get_pos()
