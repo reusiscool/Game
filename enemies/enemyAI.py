@@ -24,7 +24,9 @@ def has_clear_sight(board, entity1: Entity, entity2: Entity = None) -> bool:
 
 
 class EnemyAI:
-    def __init__(self):
+    def __init__(self, max_attacks=3):
+        self.max_attacks = max_attacks
+        self.tokens_taken = 0
         self.calls_q = []
 
     def update(self, board):
@@ -35,25 +37,32 @@ class EnemyAI:
     def _update_visibility(self, board):
         for enemy1 in board.get_enemies(board.player.pos, board.update_distance):
             enemy1: BaseEnemy
-            if has_clear_sight(board, enemy1) and dist(board.player.pos, enemy1.pos) <= enemy1.stats.detect_range:
+            if has_clear_sight(board, enemy1) and\
+                    dist(board.player.pos, enemy1.pos) <= enemy1.stats.detect_range:
                 self.calls_q.append(enemy1.pos)
 
     def _update_behaviour(self, board):
         px, py = board.player.pos
-        for enemy1 in board.get_enemies(board.player.pos, board.update_distance):
+        enemy_list = board.get_enemies(board.player.pos, board.update_distance)
+        for enemy1 in enemy_list:
             enemy1: BaseEnemy
             vecx = px - enemy1.x
             vecy = py - enemy1.y
             dist_to_player = dist((px, py), enemy1.pos)
             if enemy1.cur_attack_time:
                 enemy1.attack(board)
+                self.tokens_taken += enemy1.attack_cost
+                continue
             if dist_to_player <= enemy1.stats.min_distance:
                 enemy1.move_move(Move(-vecx, -vecy, own_speed=True))
                 continue
             if dist_to_player <= enemy1.stats.attack_distance:
-                enemy1.cur_attack_time += 1
+                if self.tokens_taken < self.max_attacks:
+                    enemy1.cur_attack_time += 1
+                    self.tokens_taken += enemy1.attack_cost
                 continue
             for pos in self.calls_q:
                 if dist(pos, enemy1.pos) <= enemy1.stats.detect_range:
                     enemy1.move_move(Move(vecx, vecy, own_speed=True))
                     break
+        self.tokens_taken = 0

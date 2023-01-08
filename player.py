@@ -3,8 +3,6 @@ from dataclasses import dataclass
 from entity import Entity, EntityStats, Team
 from utils.move import Move
 from utils.utils import normalize, load_image
-from weapons.sword import Sword, SwordStats
-from weapons.ability import Ability
 
 
 @dataclass(slots=True)
@@ -20,17 +18,17 @@ class PlayerStats(EntityStats):
 
 
 class Player(Entity):
-    def __init__(self, hitbox_size, ps: PlayerStats, inventory):
-        super().__init__(hitbox_size, ps)
+    def __init__(self, ps: PlayerStats, inventory, weapons, ability):
+        ls = []
+        for i in range(17):
+            for _ in range(7):
+                ls.append(load_image('player', f'player{i}.png', color_key='white'))
+        super().__init__(ls, ps)
         self.inventory = inventory
         self.stats = ps
         self.dash_current_cooldown = 0
-        sw_st1 = SwordStats(25, 45, 40, 40, 30)
-        sw_st2 = SwordStats(10, 100, 45, 60, 60)
-        imgs = [load_image('sword', 'sword.png', color_key='white')]
-        self.weapon_list = [Sword(imgs, sw_st1),
-                            Sword(imgs, sw_st2)]
-        self.abbility = Ability([load_image('sword', 'sword.png', color_key='white')])
+        self.weapon_list = weapons
+        self.ability = ability
         self.try_attack = False
         self.try_sec_attack = False
         self.weapon_index = False
@@ -62,8 +60,10 @@ class Player(Entity):
         for mov in self.move_q:
             if mov.own_speed:
                 sx, sy = normalize(*mov.pos)
-                dx += sx * self.stats.speed * (1 - self.dash_current_cooldown / self.stats.dash_cooldown) ** 0.5
-                dy += sy * self.stats.speed * (1 - self.dash_current_cooldown / self.stats.dash_cooldown) ** 0.5
+                dx += sx * self.stats.speed * (1 - self.dash_current_cooldown /
+                                               self.stats.dash_cooldown) ** 0.5
+                dy += sy * self.stats.speed * (1 - self.dash_current_cooldown /
+                                               self.stats.dash_cooldown) ** 0.5
                 continue
             dx += mov.dx
             dy += mov.dy
@@ -76,12 +76,12 @@ class Player(Entity):
         super().update(board)
         self.dash_current_cooldown = max(0, self.dash_current_cooldown - 1)
         self.weapon_list[self.weapon_index].update()
-        self.abbility.update()
+        self.ability.update()
         if self.try_attack:
             self.weapon_list[self.weapon_index].attack(board, self)
             self.try_attack = False
         if self.try_sec_attack:
-            self.abbility.attack(board, self)
+            self.ability.attack(board, self)
             self.try_sec_attack = False
 
     def move_input(self, x, y):
@@ -102,3 +102,24 @@ class Player(Entity):
 
     def add_mana(self, amount):
         self.stats.add_mana(amount)
+
+    def serialize(self):
+        return [self._serialize_stats()] + self._serialize_tools() + self._serialize_inventory()
+
+    def _serialize_stats(self):
+        return tuple(int(i) for i in self.pos), self.stats.speed, self.stats.health,\
+               self.stats.max_health, self.stats.mana, self.stats.max_mana,\
+               self.stats.dash_cooldown, self.stats.dash_speed, self.stats.gold
+
+    def _serialize_tools(self):
+        ls = []
+        for weapon in self.weapon_list:
+            ls.append(weapon.serialize())
+        ls.append(self.ability.serialize())
+        return ls
+
+    def _serialize_inventory(self):
+        ls = []
+        for item in self.inventory.items:
+            ls.append(item.serialize())
+        return ls

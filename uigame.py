@@ -1,3 +1,4 @@
+import os
 import pygame
 
 from utils.customFont import single_font
@@ -19,9 +20,8 @@ class UIGame:
         a = self.win_h - 2 * self.gap - self.y
         self.slot1 = pygame.Rect(self.win_w // 2, self.y + self.gap, a, a)
         self.slot2 = pygame.Rect(self.slot1.right + 2 * self.gap, self.y + self.gap, a, a)
-        self.font = single_font('large_font')
 
-    def render(self, surf, mouse_pos):
+    def render(self, surf: pygame.Surface, mouse_pos):
         pygame.draw.rect(surf, 'black', self.bg)
         pygame.draw.rect(surf, 'grey', self.hp)
         pygame.draw.rect(surf, 'grey', self.mana)
@@ -44,6 +44,13 @@ class UIGame:
         mx, my = mouse_pos
         mx //= 2
         my //= 2
+
+        with open(os.path.join('levels', 'GameState.txt')) as f:
+            level = int(f.readline())
+
+        font = single_font('large_font')
+        srf = font.render(f'Level - {level}')
+        surf.blit(srf, (surf.get_width() - srf.get_width() - 10, self.y + 10))
 
         if self.slot1.collidepoint(mx, my):
             s = generate_description('large_font', self.player.weapon_list[0].stats.__dict__, 'Weapon')

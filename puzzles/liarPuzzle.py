@@ -26,12 +26,13 @@ class Button:
     def render(self, surf: pygame.Surface):
         pygame.draw.rect(surf, 'white', self.rect)
         if self.rect.collidepoint(*pygame.mouse.get_pos()):
-            surf.blit(self.desc, self.rect.move((self.rect.width - self.desc.get_width()) // 2, -100))
+            desc_rect = self.rect.move((self.rect.width - self.desc.get_width()) // 2, -100)
+            surf.blit(self.desc, desc_rect)
 
 
 class LiarPuzzle(BasePuzzle):
-    def __init__(self, pos, reward: list[BaseLoot]):
-        super().__init__(pos, reward)
+    def __init__(self, pos, id_, reward: list[BaseLoot] = None, *_):
+        super().__init__(pos, id_, reward)
         self.buttons: list[Button] = []
         self.correct = None
 
@@ -43,7 +44,8 @@ class LiarPuzzle(BasePuzzle):
             ls = choice(ls)
         dx = w // 7
         for i, info in enumerate(ls[:3]):
-            self.buttons.append(Button(i, pygame.Rect(w // 2 - dx * (2.5 - i * 2), h * 3 // 5, dx, dx), info))
+            rct = pygame.Rect(w // 2 - dx * (2.5 - i * 2), h * 3 // 5, dx, dx)
+            self.buttons.append(Button(i, rct, info))
         self.correct = int(ls[3])
 
     def run(self) -> PuzzleResult:
@@ -74,4 +76,3 @@ class LiarPuzzle(BasePuzzle):
 
     def get_desc(self):
         return generate_description('large_font', [], 'Liar-Knight puzzle')
-

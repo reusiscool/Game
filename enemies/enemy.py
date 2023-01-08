@@ -8,9 +8,14 @@ from utils.move import Move
 
 
 class Enemy(BaseEnemy):
+    """Better replace. Outdated"""
     def __init__(self, image_list, es: EnemyStats):
         super().__init__(image_list, es)
         self.loot_table = (ManaLoot, HealthLoot, HealItemLoot)
+
+    @property
+    def attack_cost(self):
+        return 2
 
     def attack(self, board):
         self.cur_attack_time += 1

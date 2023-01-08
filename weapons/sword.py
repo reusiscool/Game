@@ -5,7 +5,7 @@ import pygame
 from weapons.baseWeapon import BaseWeapon
 from utils.converters import mum_convert
 from utils.move import Move
-from utils.utils import vector_angle, normalize, rotate
+from utils.utils import vector_angle, normalize, rotate, load_image
 
 
 @dataclass(frozen=True)
@@ -18,14 +18,12 @@ class SwordStats:
 
 
 class Sword(BaseWeapon):
-    def __init__(self, image_list: list[pygame.Surface], sword_stats: SwordStats):
+    def __init__(self, sword_stats: SwordStats):
+        image_list = [load_image('sword', 'sword.png', color_key='white')]
         super().__init__(image_list)
         self.stats = sword_stats
         self.image_list = self.image_list * self.stats.cooldown
         self.cosa = cos(radians(sword_stats.angle))
-
-    def get_stats(self):
-        return self.stats
 
     def attack(self, board, owner):
         if self.current_cooldown:
@@ -36,7 +34,8 @@ class Sword(BaseWeapon):
             if obj == owner:
                 continue
             if dist(obj.pos, owner.pos) <= self.stats.range_ and \
-                    vector_angle((obj.x - owner.x, obj.y - owner.y), owner.looking_direction) >= self.cosa:
+                    vector_angle((obj.x - owner.x, obj.y - owner.y),
+                                 owner.looking_direction) >= self.cosa:
                 obj.damage(self.stats.damage)
                 m1 = Move(obj.x - sx, obj.y - sy, 7, normalize=True)
                 m1.amplify(self.stats.knockback // 7)
@@ -66,3 +65,7 @@ class Sword(BaseWeapon):
         for line in rotate((x, y), self.stats.angle - 10):
             nx, ny = self.draw_line(line, self.stats.range_, owner)
             pygame.draw.line(surf, 'orange', (px - cx, py - cy), (nx - cx, ny - cy), 5)
+
+    def serialize(self):
+        return self.stats.damage, self.stats.range_, self.stats.angle,\
+               self.stats.cooldown, self.stats.knockback

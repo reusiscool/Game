@@ -12,8 +12,8 @@ from utils.infoDisplay import generate_description
 
 
 class TicTacToePuzzle(BasePuzzle):
-    def __init__(self, pos, reward: list[BaseLoot], level=0):
-        super().__init__(pos, reward)
+    def __init__(self, pos, id_, reward: list[BaseLoot] = None, level=0):
+        super().__init__(pos, id_, reward)
         fk, self.draw_wins = self.read_sets(level)
         self.board = TicTacToeBoard(fk)
 

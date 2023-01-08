@@ -2,11 +2,12 @@ import pygame
 
 from weapons.baseWeapon import BaseWeapon
 from weapons.baseProjectile import BaseProjectile
-from utils.utils import normalize
+from utils.utils import normalize, load_image
 
 
 class Ability(BaseWeapon):
-    def __init__(self, image_list: list[pygame.Surface]):
+    def __init__(self):
+        image_list = [load_image('sword', 'sword.png', color_key='white')]
         super().__init__(image_list)
         self.cooldown = 10
         self.cost = 10
@@ -26,3 +27,6 @@ class Ability(BaseWeapon):
 
     def render(self, *args):
         pass
+
+    def serialize(self):
+        return self.cooldown, self.cost

@@ -66,13 +66,6 @@ class Entity(ABC):
                     rect.left = r.right
                 self.x = rect.x
 
-    def damage(self, amount):
-        if amount < 0:
-            return
-        font = single_font('large_font')
-        self.damage_img = font.render(str(amount))
-        self.stats.health = max(0, self.stats.health - amount)
-
     def _move_y(self, dy, map_):
         if not dy:
             return
@@ -87,6 +80,13 @@ class Entity(ABC):
                 else:
                     rect.top = r.bottom
                 self.y = rect.y
+
+    def damage(self, amount):
+        if amount < 0:
+            return
+        font = single_font('large_font')
+        self.damage_img = font.render(str(amount))
+        self.stats.health = max(0, self.stats.health - amount)
 
     @property
     def pos(self) -> Tuple[float, float]:
@@ -132,7 +132,8 @@ class Entity(ABC):
         off_y = img.get_height()
         surf.blit(img, (x - camera_x - off_x, y - camera_y - off_y + self.hitbox_size // 2))
         if self.damage_img:
-            surf.blit(self.damage_img, (x - camera_x - off_x, y - camera_y - off_y + self.hitbox_size // 2))
+            surf.blit(self.damage_img, (x - camera_x - off_x,
+                                        y - camera_y - off_y + self.hitbox_size // 2))
             self.damage_time += 1
             if self.damage_time > 10:
                 self.damage_img = None

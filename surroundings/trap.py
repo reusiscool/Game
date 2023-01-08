@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import pygame
 
 from utils.converters import mum_convert
+from utils.savingConst import SavingConstants
 
 
 @dataclass
@@ -17,7 +18,10 @@ class TrapStats:
 
 
 class Trap:
-    def __init__(self, ts: TrapStats, image_list: list[pygame.Surface]):
+    def __init__(self, ts: TrapStats):
+        image_list = [pygame.Surface((150, 80)), pygame.Surface((150, 80))]
+        image_list[0].fill('black')
+        image_list[1].fill('red')
         self.image_list = image_list
         self.ts = ts
         self.time = 0
@@ -49,3 +53,6 @@ class Trap:
         img = self.image_list[ind]
         x, y = mum_convert(self.ts.rect.x, self.ts.rect.y)
         surf.blit(img, (x - camera_x - img.get_width() // 2, y - camera_y))
+
+    def serialize(self):
+        return SavingConstants().get_const(type(self)), (int(self.ts.rect.x), int(self.ts.rect.y))

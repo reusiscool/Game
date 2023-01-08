@@ -2,6 +2,7 @@ import pygame
 
 from .baseItem import BaseItem
 from utils.infoDisplay import generate_description
+from items.itemConst import ItemConstants
 
 
 class KeyItem(BaseItem):
@@ -14,3 +15,6 @@ class KeyItem(BaseItem):
 
     def use(self, owner) -> bool:
         return False
+
+    def serialize(self):
+        return ItemConstants().const[KeyItem], self.lock_id

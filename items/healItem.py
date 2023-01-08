@@ -2,6 +2,7 @@ import pygame
 
 from items.baseItem import BaseItem
 from utils.infoDisplay import generate_description
+from items.itemConst import ItemConstants
 
 
 class HealItem(BaseItem):
@@ -15,3 +16,6 @@ class HealItem(BaseItem):
     def use(self, owner):
         owner.add_health(self.heal_amount)
         return True
+
+    def serialize(self):
+        return ItemConstants().const[HealItem], self.heal_amount

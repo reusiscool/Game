@@ -13,7 +13,9 @@ class GrassController:
         self.tile_size = tile_size
         self.max_uniq = max_uniq
         self.chunk_size = chunksize
-        self.grass_text_list = [load_image('grass', f'grass_{i}.png', color_key='black') for i in range(6)]
+        self.grass_text_list = [
+            load_image('grass', f'grass_{i}.png', color_key='black') for i in range(6)
+        ]
         self.cached_surfs = []
         self.grass_chunks: dict[tuple, list] = {}
         self.time = 0
@@ -55,8 +57,10 @@ class GrassController:
     def get_items(self, pos, distance, map_):
         x, y = pos
         ls = []
-        for ny in range(int((y - distance) // self.tile_size), int((y + distance) // self.tile_size) + 1):
-            for nx in range(int((x - distance) // self.tile_size), int((x + distance) // self.tile_size) + 1):
+        for ny in range(int((y - distance) // self.tile_size),
+                        int((y + distance) // self.tile_size) + 1):
+            for nx in range(int((x - distance) // self.tile_size),
+                            int((x + distance) // self.tile_size) + 1):
                 pos = (nx, ny)
                 if pos not in map_:
                     continue
