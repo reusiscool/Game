@@ -12,10 +12,10 @@ from utils.utils import draw_line
 
 
 class Layout:
-    def __init__(self, name, size):
+    def __init__(self, lvl_num: int, size):
         self.corridors = {}
         self.size = size
-        self.name = name
+        self.level_number = lvl_num
         self.map_ = [[]]
         self.rooms: list[Room] = []
 
@@ -92,15 +92,15 @@ class Layout:
         self._assign_rooms(ls, corridors)
 
     @classmethod
-    def read_from(cls, name):
-        with open(os.path.join('.', 'levels', name + 'layout.csv')) as f:
+    def read_from(cls, lvl_num):
+        with open(os.path.join('.', 'levels', str(lvl_num) + 'layout.csv')) as f:
             reader = csv.reader(f)
             map_ = []
             for row in reader:
                 if not row:
                     continue
                 map_.append([int(i) for i in row])
-        with open(os.path.join('.', 'levels', name + 'rooms.csv')) as f:
+        with open(os.path.join('.', 'levels', str(lvl_num) + 'rooms.csv')) as f:
             reader = csv.reader(f)
             rooms = []
             for row in reader:
@@ -108,7 +108,7 @@ class Layout:
                     continue
                 ls = [int(i) for i in row]
                 rooms.append(Room(pygame.Rect(ls[0], ls[1], ls[2], ls[3]), ls[4], RoomType(ls[5])))
-        inst = Layout(name, len(map_))
+        inst = Layout(lvl_num, len(map_))
         inst.map_ = map_
         inst.rooms = rooms
         return inst
@@ -161,10 +161,11 @@ class Layout:
         self.rooms = res
 
     def write(self):
-        with open(os.path.join('.', 'levels', self.name + 'layout.csv'), 'w') as f:
+        name = str(self.level_number)
+        with open(os.path.join('.', 'levels', name + 'layout.csv'), 'w') as f:
             writer = csv.writer(f)
             writer.writerows(self.map_)
-        with open(os.path.join('.', 'levels', self.name + 'rooms.csv'), 'w') as f:
+        with open(os.path.join('.', 'levels', name + 'rooms.csv'), 'w') as f:
             writer = csv.writer(f)
             for i in self.rooms:
                 writer.writerow((*tuple(i.rect), i.id_, i.type_.value))

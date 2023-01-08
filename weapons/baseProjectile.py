@@ -5,7 +5,8 @@ from entity import Entity
 
 
 class BaseProjectile:
-    def __init__(self, pos, hitbox_size, image_list: list[pygame.Surface], lifetime, owner, vlist, damage):
+    def __init__(self, pos, hitbox_size, image_list: list[pygame.Surface],
+                 lifetime, owner, vlist, damage):
         self.image_list = image_list
         self.hitbox_size = hitbox_size
         self.x, self.y = pos

@@ -2,6 +2,7 @@ import pygame
 
 from loot.baseLoot import BaseLoot
 from items.keyItem import KeyItem
+from utils.savingConst import SavingConstants
 
 
 class KeyItemLoot(BaseLoot):
@@ -15,3 +16,7 @@ class KeyItemLoot(BaseLoot):
         if obj.inventory.add_item(self.item):
             return
         board.add_noncollider(self)
+
+    def serialize(self):
+        return SavingConstants().get_const(type(self)), self.item.lock_id,\
+               (int(self.x), int(self.y))

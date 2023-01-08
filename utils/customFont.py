@@ -29,7 +29,8 @@ class CustomFont:
         return ls
 
     def read_font(self, order):
-        surf = pygame.image.load(os.path.join('.', 'imgs', 'fonts', self.font_name + '.png')).convert()
+        surf = pygame.image.load(os.path.join('.', 'imgs', 'fonts',
+                                              self.font_name + '.png')).convert()
         self.height = surf.get_height()
         cur_width = 0
         cur_char = 0

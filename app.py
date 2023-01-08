@@ -20,6 +20,7 @@ class App:
         while True:
             res = self.cur_scene.run()
             if res == Scene.Exit:
+                self.gs.save()
                 pygame.quit()
                 sys.exit()
             if res == Scene.GameScene:

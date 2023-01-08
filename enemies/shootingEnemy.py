@@ -2,6 +2,7 @@ from math import dist
 import pygame
 
 from enemies.baseEnemy import BaseEnemy, EnemyStats
+from utils.utils import load_image
 from weapons.baseProjectile import BaseProjectile
 from loot.healItemLoot import HealItemLoot
 from loot.healthLoot import HealthLoot
@@ -10,7 +11,8 @@ from utils.move import Move
 
 
 class ShootingEnemy(BaseEnemy):
-    def __init__(self, image_list: list[pygame.Surface], es: EnemyStats):
+    def __init__(self, es: EnemyStats):
+        image_list = [load_image('grass.jpg')]
         super().__init__(image_list, es)
         self.loot_table = (ManaLoot, HealthLoot, HealItemLoot)
 

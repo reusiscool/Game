@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from random import choice
+from typing import Tuple
 import pygame
 
 from utils.customFont import single_font
 from entity import Entity, EntityStats, Team
+from utils.savingConst import SavingConstants
 
 
 @dataclass(slots=True)
@@ -25,6 +27,10 @@ class BaseEnemy(Entity, ABC):
         self.font = single_font('large_font')
         self.loot_table = []
 
+    @property
+    def attack_cost(self):
+        return 1
+
     def update(self, board):
         board.pop_enemy(self)
         self.collided = False
@@ -44,3 +50,7 @@ class BaseEnemy(Entity, ABC):
     @abstractmethod
     def attack(self, *args, **kwargs):
         pass
+
+    def serialize(self) -> Tuple[int, tuple[int, int], int]:
+        return SavingConstants().get_const(type(self)),\
+               (int(self.x), int(self.y)), self.stats.health
