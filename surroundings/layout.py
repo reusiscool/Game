@@ -17,7 +17,7 @@ class Layout:
         self.size = size
         self.level_number = lvl_num
         self.map_ = [[]]
-        self.rooms: list[Room] = []
+        self.rooms: dict[tuple, Room] = {}
 
     def generate(self):
         avg_room_size = 6
@@ -91,26 +91,39 @@ class Layout:
         self.corridors = corridors
         self._assign_rooms(ls, corridors)
 
+    def add_room(self, room):
+        self.rooms[room.rect.center] = room
+
+    @property
+    def room_list(self):
+        return [self.rooms[key] for key in self.rooms]
+
+    def get_rooms(self, pos, distance):
+        """pos in tile coords"""
+        px, py = pos
+        for x in range(px - distance, px + distance + 1):
+            for y in range(py - distance, py + distance + 1):
+                if (x, y) in self.rooms:
+                    yield self.rooms[(x, y)]
+
     @classmethod
     def read_from(cls, lvl_num):
-        with open(os.path.join('.', 'levels', str(lvl_num) + 'layout.csv')) as f:
+        with open(os.path.join('.', 'levels', 'layout.csv')) as f:
             reader = csv.reader(f)
             map_ = []
             for row in reader:
                 if not row:
                     continue
                 map_.append([int(i) for i in row])
-        with open(os.path.join('.', 'levels', str(lvl_num) + 'rooms.csv')) as f:
+        inst = Layout(lvl_num, len(map_))
+        with open(os.path.join('.', 'levels', 'rooms.csv')) as f:
             reader = csv.reader(f)
-            rooms = []
             for row in reader:
                 if not row:
                     continue
                 ls = [int(i) for i in row]
-                rooms.append(Room(pygame.Rect(ls[0], ls[1], ls[2], ls[3]), ls[4], RoomType(ls[5])))
-        inst = Layout(lvl_num, len(map_))
+                inst.add_room(Room(pygame.Rect(ls[0], ls[1], ls[2], ls[3]), ls[4], RoomType(ls[5])))
         inst.map_ = map_
-        inst.rooms = rooms
         return inst
 
     def _assign_rooms(self, room_rects: list[pygame.Rect], corridors: list[list[int]]):
@@ -158,14 +171,15 @@ class Layout:
                         break
                 continue
             res[key] = Room(room_rects[key], c, used[key])
-        self.rooms = res
+        for rm in res:
+            self.add_room(rm)
 
     def write(self):
-        name = str(self.level_number)
-        with open(os.path.join('.', 'levels', name + 'layout.csv'), 'w') as f:
+        with open(os.path.join('.', 'levels', 'layout.csv'), 'w') as f:
             writer = csv.writer(f)
             writer.writerows(self.map_)
-        with open(os.path.join('.', 'levels', name + 'rooms.csv'), 'w') as f:
+        with open(os.path.join('.', 'levels', 'rooms.csv'), 'w') as f:
             writer = csv.writer(f)
             for i in self.rooms:
-                writer.writerow((*tuple(i.rect), i.id_, i.type_.value))
+                room = self.rooms[i]
+                writer.writerow((*tuple(room.rect), room.id_, room.type_.value))

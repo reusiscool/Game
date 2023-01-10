@@ -57,8 +57,7 @@ class LiarPuzzle(BasePuzzle):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
+                    return PuzzleResult.Quit
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     for btn in self.buttons:
                         if btn.rect.collidepoint(*event.pos):

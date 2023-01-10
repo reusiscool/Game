@@ -1,7 +1,4 @@
 from enemies.baseEnemy import BaseEnemy, EnemyStats
-from loot.healItemLoot import HealItemLoot
-from loot.healthLoot import HealthLoot
-from loot.manaLoot import ManaLoot
 from player import Player
 from utils.move import Move
 from utils.utils import load_image
@@ -11,12 +8,24 @@ class DashEnemy(BaseEnemy):
     def __init__(self, es: EnemyStats):
         image_list = [load_image('grass.jpg')]
         super().__init__(image_list, es)
-        self.loot_table = (ManaLoot, HealthLoot, HealItemLoot)
         self.leap_time = 15
+        self.token_time = 0
+
+    @property
+    def drop_amount(self):
+        return 2
+
+    @property
+    def token_priority(self):
+        return self.token_time
 
     @property
     def attack_cost(self):
         return 2
+
+    def update(self, board):
+        super().update(board)
+        self.token_time = max(0, self.token_time - 1)
 
     def _move_x(self, dx, map_):
         if not dx:
@@ -61,5 +70,6 @@ class DashEnemy(BaseEnemy):
             mv = Move(vecx, vecy, duration=self.leap_time, own_speed=True)
             mv.amplify(3)
             self.move_move(mv)
+            self.token_time = self.leap_time + self.stats.attack_time * 3
         elif self.cur_attack_time >= self.stats.attack_time * 2 + self.leap_time:
             self.cur_attack_time = 0

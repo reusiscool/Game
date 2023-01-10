@@ -1,5 +1,3 @@
-import pygame
-
 from interactables.baseInteractable import BaseInteractable
 from weapons.baseWeapon import BaseWeapon
 from utils.infoDisplay import generate_description
@@ -19,9 +17,6 @@ class WeaponLoot(BaseInteractable):
 
     def get_desc(self):
         return generate_description('large_font', self.weapon.stats.__dict__, 'Weapon')
-
-    def render(self, surf: pygame.Surface, camera_x, camera_y):
-        super().render(surf, camera_x, camera_y)
 
     def serialize(self):
         return SavingConstants().get_const(type(self)), *self.weapon.serialize(),\

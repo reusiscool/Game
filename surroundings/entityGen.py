@@ -6,8 +6,13 @@ import csv
 from enemies.dashEnemy import DashEnemy
 from enemies.shootingEnemy import ShootingEnemy
 from interactables.portal import Portal
+from interactables.shop import Shop
+from loot.healItemLoot import HealItemLoot
+from loot.healthLoot import HealthLoot
 from loot.keyItemLoot import KeyItemLoot
 from enemies.baseEnemy import EnemyStats
+from loot.manaItemLoot import ManaItemLoot
+from loot.manaLoot import ManaLoot
 from puzzles.basePuzzle import BasePuzzle
 from surroundings.trap import Trap, TrapStats
 from surroundings.rooms import Room, RoomType
@@ -32,7 +37,11 @@ class EntityGen:
             self.constants.get_const(KeyItemLoot): lambda x: self._load_key(x),
             self.constants.get_const(Trap): lambda x: self._load_trap(x),
             self.constants.get_const(BasePuzzle): lambda x: self._load_puzzle(x),
-            self.constants.get_const(Portal): lambda x: self._load_portal(x)
+            self.constants.get_const(Portal): lambda x: self._load_portal(x),
+            self.constants.get_const(HealthLoot): lambda x: self._load_mana_health(x, HealthLoot),
+            self.constants.get_const(ManaLoot): lambda x: self._load_mana_health(x, ManaLoot),
+            self.constants.get_const(ManaItemLoot): lambda x: self._load_mana_health(x, ManaItemLoot),
+            self.constants.get_const(HealItemLoot): lambda x: self._load_mana_health(x, HealItemLoot)
         }
 
     def _gen_enemies(self, room):
@@ -77,11 +86,13 @@ class EntityGen:
                 self.noncolliders.append(WeaponLoot(room.pos_to_tiles(self.tile_size), Sword(sws)))
             elif room.type_ == RoomType.Portal:
                 self.noncolliders.append(Portal(room.pos_to_tiles(self.tile_size)))
+            elif room.type_ == RoomType.Shop:
+                self.noncolliders.append(Shop(room.pos_to_tiles(self.tile_size), 0, self.level_number))
 
     def write(self, entity_list):
         ls = []
         for entity in entity_list:
-            if self.constants.contains(type(entity)):
+            if self.constants.contains(type(entity)) or isinstance(entity, BasePuzzle):
                 ls.append(entity.serialize())
         with open(os.path.join('levels', 'entities.csv'), 'w') as f:
             writer = csv.writer(f)
@@ -117,6 +128,11 @@ class EntityGen:
         pos = eval(line[6])
         sws = SwordStats(dmg, rng, angle, cd, knock)
         self.noncolliders.append(WeaponLoot(pos, Sword(sws)))
+
+    def _load_mana_health(self, line, type_):
+        pos = eval(line[1])
+        amount = int(line[2])
+        self.noncolliders.append(type_(pos, amount))
 
     def _load_portal(self, line):
         locks = list(eval(line[1]))

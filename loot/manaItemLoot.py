@@ -1,16 +1,16 @@
 import pygame
 
+from items.manaItem import ManaItem
 from loot.baseLoot import BaseLoot
-from items.healItem import HealItem
 from utils.savingConst import SavingConstants
 
 
-class HealItemLoot(BaseLoot):
+class ManaItemLoot(BaseLoot):
     def __init__(self, pos, amount=None):
         s = pygame.Surface((10, 10))
         s.fill('purple')
         super().__init__(pos, [s])
-        self.item = HealItem(amount)
+        self.item = ManaItem(amount)
 
     @property
     def desc(self):
@@ -22,4 +22,4 @@ class HealItemLoot(BaseLoot):
         board.add_noncollider(self)
 
     def serialize(self):
-        return SavingConstants().get_const(HealItemLoot), self.pos, self.item.heal_amount
+        return SavingConstants().get_const(ManaItemLoot), self.pos, self.item.mana_amount

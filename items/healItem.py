@@ -2,20 +2,20 @@ import pygame
 
 from items.baseItem import BaseItem
 from utils.infoDisplay import generate_description
-from items.itemConst import ItemConstants
+from utils.savingConst import SavingConstants
 
 
 class HealItem(BaseItem):
-    def __init__(self, heal_amount):
+    def __init__(self, heal_amount=None):
         surf = pygame.Surface((20, 20))
         surf.fill('red')
         desc = generate_description('large_font', {'Heals': heal_amount}, 'Heal item')
         super().__init__(surf, desc)
-        self.heal_amount = heal_amount
+        self.heal_amount = heal_amount if heal_amount is not None else 10
 
     def use(self, owner):
         owner.add_health(self.heal_amount)
         return True
 
     def serialize(self):
-        return ItemConstants().const[HealItem], self.heal_amount
+        return SavingConstants().get_const(HealItem), self.heal_amount

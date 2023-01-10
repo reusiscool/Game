@@ -30,10 +30,10 @@ class LevelReader:
             self.level = Layout(lvl_num, SavingConstants().level_size[lvl_num - 1])
             while True:
                 self.level.generate()
-                if RoomType.Player in (i.type_ for i in self.level.rooms):
+                if RoomType.Player in (i.type_ for i in self.level.room_list):
                     break
             self.entity_reader = EntityGen(lvl_num, self.tile_size)
-            self.entity_reader.generate(self.level.rooms)
+            self.entity_reader.generate(self.level.room_list)
             with open(os.path.join('levels', 'GameState.txt'), 'w') as f:
                 f.write(str(lvl_num))
         else:
@@ -67,7 +67,7 @@ class LevelReader:
 
     @property
     def player_room(self):
-        for room in self.level.rooms:
+        for room in self.level.room_list:
             if room.type_ == RoomType.Player:
                 return room.rect.center
 
@@ -76,8 +76,8 @@ class LevelReader:
         self.entity_reader.write(entity_list)
 
     def grass_circle(self, cx, cy, r, room):
-        for y in range(cy - r - 100, cy + r + 100, 100):
-            for x in range(cx - r - 100, cx + r + 100, 100):
+        for y in range(cy - r - 100, cy + r + 100, 150):
+            for x in range(cx - r - 100, cx + r + 100, 150):
                 if dist((cx, cy), (x, y)) > r:
                     continue
                 c1, c2 = x / 1000, y / 1000
@@ -85,7 +85,7 @@ class LevelReader:
                     self.grass.append((c1, c2))
 
     def gen_grass(self):
-        for room in self.level.rooms:
+        for room in self.level.room_list:
             if room.type_ not in (RoomType.Combat, RoomType.Puzzle, RoomType.Null, RoomType.Player):
                 continue
             W = room.rect.width * 1000

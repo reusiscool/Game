@@ -11,27 +11,35 @@ from puzzles.ticLogic import GameState
 from utils.infoDisplay import generate_description
 
 
+tic_sets = []
+
+
+def read_sets():
+    global tic_sets
+    tic_sets = []
+    with open(os.path.join('puzzles', 'ticSets.csv')) as f:
+        reader = csv.reader(f)
+        for line in reader:
+            pos = [int(i) for i in line[:9]]
+            pos = [[Mark(pos[i + j * 3]) for i in range(3)] for j in range(3)]
+            tic_sets.append((pos, int(line[9])))
+
+
 class TicTacToePuzzle(BasePuzzle):
     def __init__(self, pos, id_, reward: list[BaseLoot] = None, level=0):
         super().__init__(pos, id_, reward)
-        fk, self.draw_wins = self.read_sets(level)
+        if not tic_sets:
+            read_sets()
+        fk, self.draw_wins = self._get_set(level)
         self.board = TicTacToeBoard(fk)
 
-    def read_sets(self, level):
-        with open(os.path.join('puzzles', 'ticSets.csv')) as f:
-            reader = csv.reader(f)
-            ls = []
-            for line in reader:
-                ls.append(line)
-            while True:
-                ind = numpy.random.normal(max(level, 8), 2.7)
-                if ind < 0 or ind >= 9:
-                    continue
-                break
-            ls = ls[int(ind)]
-        pos = [int(i) for i in ls[:9]]
-        pos = [[Mark(pos[i + j * 3]) for i in range(3)] for j in range(3)]
-        return pos, int(ls[9])
+    def _get_set(self, level):
+        while True:
+            ind = numpy.random.normal(max(level, 8), 2.7)
+            if ind < 0 or ind >= 9:
+                continue
+            break
+        return tic_sets[int(ind)]
 
     def run(self) -> PuzzleResult:
         screen = pygame.display.get_surface()
@@ -43,8 +51,7 @@ class TicTacToePuzzle(BasePuzzle):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
+                    return PuzzleResult.Quit
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if res != GameState.on_going:
                         if res == GameState.won or res == GameState.drawn and self.draw_wins:

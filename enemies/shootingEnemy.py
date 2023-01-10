@@ -4,9 +4,6 @@ import pygame
 from enemies.baseEnemy import BaseEnemy, EnemyStats
 from utils.utils import load_image
 from weapons.baseProjectile import BaseProjectile
-from loot.healItemLoot import HealItemLoot
-from loot.healthLoot import HealthLoot
-from loot.manaLoot import ManaLoot
 from utils.move import Move
 
 
@@ -14,7 +11,6 @@ class ShootingEnemy(BaseEnemy):
     def __init__(self, es: EnemyStats):
         image_list = [load_image('grass.jpg')]
         super().__init__(image_list, es)
-        self.loot_table = (ManaLoot, HealthLoot, HealItemLoot)
 
     def attack(self, board):
         self.cur_attack_time += 1
@@ -29,3 +25,11 @@ class ShootingEnemy(BaseEnemy):
                 b = BaseProjectile(self.pos, 10, [bsurf], 420, self, vec.vector, self.stats.damage)
                 board.add_projectile(b)
             self.cur_attack_time = 0
+
+    @property
+    def token_priority(self):
+        return 1
+
+    @property
+    def drop_amount(self):
+        return 2

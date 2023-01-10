@@ -3,7 +3,6 @@ import os
 
 import pygame
 
-from items.itemConst import ItemConstants
 from utils.converters import mum_convert, back_convert
 from surroundings.board import Board
 from utils.camera import Camera
@@ -12,6 +11,7 @@ from items.healItem import HealItem
 from minimap import Minimap
 from player import Player, PlayerStats
 from uigame import UIGame
+from utils.savingConst import SavingConstants
 from utils.utils import normalize
 from scenes.scene import Scene
 from weapons.ability import Ability
@@ -29,14 +29,11 @@ class GameScene:
         self.clock = pygame.time.Clock()
         self.camera = Camera([0, 0])
         is_new_session = self._gen_new()
-        if is_new_session:
-            self.player: Player = self._gen_player()
-        else:
-            self.player = self._load_player()
+        self.player = self._gen_player() if is_new_session else self._load_player()
         self.board: Board = Board(100, self.player, 700,
                                   self.display.get_width() * 3 // 5, is_new_session)
         self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
-        self.minimap: Minimap = Minimap(self.board.reader.map_, self.board.reader.level.rooms)
+        self.minimap: Minimap = Minimap(self.board.reader.map_, self.board.reader.level.room_list)
 
     def _gen_new(self):
         with open(os.path.join('levels', 'GameState.txt')) as f:
@@ -70,7 +67,7 @@ class GameScene:
         weapons1 = [Sword(st1), Sword(st2)]
         invent = Inventory(7, self.display.get_size())
         for i in items:
-            item = ItemConstants().types[int(i[0])]
+            item = SavingConstants().get_type(int(i[0]))
             item = item(*(int(i) for i in i[1:]))
             invent.add_item(item)
         return Player(stats, invent, weapons1, Ability())
@@ -101,7 +98,7 @@ class GameScene:
         if self.player.is_passing:
             self.player.is_passing = False
             self.board = Board(100, self.player, 700, self.display.get_width() * 3 // 5, True)
-            self.minimap: Minimap = Minimap(self.board.reader.map_, self.board.reader.level.rooms)
+            self.minimap: Minimap = Minimap(self.board.reader.map_, self.board.reader.level.room_list)
             return
         x, y = pygame.mouse.get_pos()
         cx, cy = self.camera.pos

@@ -1,8 +1,8 @@
 import pygame
 
+from utils.savingConst import SavingConstants
 from .baseItem import BaseItem
 from utils.infoDisplay import generate_description
-from items.itemConst import ItemConstants
 
 
 class KeyItem(BaseItem):
@@ -17,4 +17,4 @@ class KeyItem(BaseItem):
         return False
 
     def serialize(self):
-        return ItemConstants().const[KeyItem], self.lock_id
+        return SavingConstants().get_const(KeyItem), self.lock_id

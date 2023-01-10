@@ -23,6 +23,11 @@ def normalize(x: int, y: int):
     return x * k, y * k
 
 
+def is_left(line_point1, line_point2, point):
+    return (line_point2[0] - line_point1[0]) * (point[1] - line_point1[1]) >\
+           (line_point2[1] - line_point1[1]) * (point[0] - line_point1[0])
+
+
 def draw_line(x0, y0, x1, y1):
     dx = abs(x1 - x0)
     sx = 1 if x0 < x1 else -1

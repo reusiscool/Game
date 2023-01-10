@@ -18,6 +18,8 @@ class EntityStats:
     max_health: int
 
     def heal(self, amount):
+        if self.health >= self.max_health:
+            return
         self.health = min(self.max_health, self.health + amount)
 
 
@@ -135,7 +137,7 @@ class Entity(ABC):
             surf.blit(self.damage_img, (x - camera_x - off_x,
                                         y - camera_y - off_y + self.hitbox_size // 2))
             self.damage_time += 1
-            if self.damage_time > 10:
+            if self.damage_time > 20:
                 self.damage_img = None
                 self.damage_time = 0
 
