@@ -14,7 +14,7 @@ from uigame import UIGame
 from utils.savingConst import SavingConstants
 from utils.utils import normalize
 from scenes.scene import Scene
-from weapons.ability import Ability
+from weapons.ability import Ability, AbilityStats
 from weapons.sword import SwordStats, Sword
 
 
@@ -33,7 +33,11 @@ class GameScene:
         self.board: Board = Board(100, self.player, 700,
                                   self.display.get_width() * 3 // 5, is_new_session)
         self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
-        self.minimap: Minimap = Minimap(self.board.reader.map_, self.board.reader.level.room_list)
+        self.minimap: Minimap = Minimap(self.board.reader.map_,
+                                        self.board.reader.level.room_list, read=not is_new_session)
+        x, y = self.player.pos
+        x1, y1 = mum_convert(x, y)
+        self.camera.snap((x1, y1), self.display.get_size())
 
     def _gen_new(self):
         with open(os.path.join('levels', 'GameState.txt')) as f:
@@ -47,7 +51,8 @@ class GameScene:
         invent.add_item(hl)
         sw_st1 = SwordStats(25, 45, 40, 40, 30)
         sw_st2 = SwordStats(10, 100, 45, 60, 60)
-        return Player(ps, invent, [Sword(sw_st1), Sword(sw_st2)], Ability())
+        ast = AbilityStats(20, 20, 10)
+        return Player(ps, invent, [Sword(sw_st1), Sword(sw_st2)], Ability(ast))
 
     def _load_player(self):
         with open(os.path.join('levels', 'player.csv')) as f:
@@ -55,22 +60,21 @@ class GameScene:
             stat_line = next(reader)
             w1 = next(reader)
             w2 = next(reader)
-            abl = next(reader)
+            ast = next(reader)
             items = []
             for item in reader:
                 items.append(item)
+        abl = SavingConstants().load(ast)
         pos = eval(stat_line[0])
         stats = [int(i) for i in stat_line[1:]]
         stats = PlayerStats((*pos, 10), *stats)
-        st1 = SwordStats(*(int(i) for i in w1))
-        st2 = SwordStats(*(int(i) for i in w2))
-        weapons1 = [Sword(st1), Sword(st2)]
+        weapons1 = [SavingConstants().load(w1), SavingConstants().load(w2)]
         invent = Inventory(7, self.display.get_size())
         for i in items:
             item = SavingConstants().get_type(int(i[0]))
             item = item(*(int(i) for i in i[1:]))
             invent.add_item(item)
-        return Player(stats, invent, weapons1, Ability())
+        return Player(stats, invent, weapons1, abl)
 
     def check_controls(self):
         keys = pygame.key.get_pressed()
@@ -98,7 +102,11 @@ class GameScene:
         if self.player.is_passing:
             self.player.is_passing = False
             self.board = Board(100, self.player, 700, self.display.get_width() * 3 // 5, True)
-            self.minimap: Minimap = Minimap(self.board.reader.map_, self.board.reader.level.room_list)
+            self.minimap: Minimap = Minimap(self.board.reader.map_,
+                                            self.board.reader.level.room_list)
+            x, y = self.player.pos
+            x1, y1 = mum_convert(x, y)
+            self.camera.snap((x1, y1), self.display.get_size())
             return
         x, y = pygame.mouse.get_pos()
         cx, cy = self.camera.pos
@@ -157,3 +165,4 @@ class GameScene:
 
     def save(self):
         self.board.save()
+        self.minimap.save()

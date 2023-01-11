@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from random import choice
 from typing import Tuple
 import pygame
 

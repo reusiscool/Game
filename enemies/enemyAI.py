@@ -101,8 +101,10 @@ class EnemyAI:
                 closest_room = room
                 dst = k
         for _ in range(5):
-            x = randint(closest_room.rect.left * board.tile_size, (closest_room.rect.right - 1) * board.tile_size)
-            y = randint(closest_room.rect.top * board.tile_size, (closest_room.rect.bottom - 1) * board.tile_size)
+            x = randint(closest_room.rect.left * board.tile_size,
+                        (closest_room.rect.right - 1) * board.tile_size)
+            y = randint(closest_room.rect.top * board.tile_size,
+                        (closest_room.rect.bottom - 1) * board.tile_size)
             enemy1.patrol_q.append((x, y))
         if not closest_room.rect.collidepoint(enemy1.tile_pos(board.tile_size)):
             enemy1.patrol_q.append(closest_room.pos_to_tiles(board.tile_size))

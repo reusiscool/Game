@@ -9,9 +9,9 @@ class HealItem(BaseItem):
     def __init__(self, heal_amount=None):
         surf = pygame.Surface((20, 20))
         surf.fill('red')
+        self.heal_amount = heal_amount if heal_amount is not None else 10
         desc = generate_description('large_font', {'Heals': heal_amount}, 'Heal item')
         super().__init__(surf, desc)
-        self.heal_amount = heal_amount if heal_amount is not None else 10
 
     def use(self, owner):
         owner.add_health(self.heal_amount)

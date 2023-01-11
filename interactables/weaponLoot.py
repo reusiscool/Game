@@ -19,5 +19,5 @@ class WeaponLoot(BaseInteractable):
         return generate_description('large_font', self.weapon.stats.__dict__, 'Weapon')
 
     def serialize(self):
-        return SavingConstants().get_const(type(self)), *self.weapon.serialize(),\
-               tuple(int(i) for i in self.pos)
+        return SavingConstants().get_const(type(self)),\
+               tuple(int(i) for i in self.pos), *self.weapon.serialize()

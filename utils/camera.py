@@ -9,3 +9,7 @@ class Camera:
     def adjust(self, focus_pos, size):
         self.true_pos[0] += (focus_pos[0] - self.true_pos[0] - size[0] // 2) / 10
         self.true_pos[1] += (focus_pos[1] - self.true_pos[1] - size[1] // 2) / 10
+
+    def snap(self, focus_pos, size):
+        self.true_pos[0] = focus_pos[0] - size[0] // 2
+        self.true_pos[1] = focus_pos[1] - size[1] // 2

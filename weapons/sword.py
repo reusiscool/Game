@@ -1,7 +1,10 @@
 from math import dist, cos, radians
 from dataclasses import dataclass
+from random import randint
+
 import pygame
 
+from utils.savingConst import SavingConstants
 from weapons.baseWeapon import BaseWeapon
 from utils.converters import mum_convert
 from utils.move import Move
@@ -67,5 +70,27 @@ class Sword(BaseWeapon):
             pygame.draw.line(surf, 'orange', (px - cx, py - cy), (nx - cx, ny - cy), 5)
 
     def serialize(self):
-        return self.stats.damage, self.stats.range_, self.stats.angle,\
-               self.stats.cooldown, self.stats.knockback
+        return SavingConstants().get_const(Sword), self.stats.damage, self.stats.range_,\
+               self.stats.angle, self.stats.cooldown, self.stats.knockback
+
+    @classmethod
+    def generate(cls, rarity, lvl):
+        raw_stats = []
+        min_stats = []
+        for min_stat, raw_stat in SavingConstants().get_stats(Sword, lvl):
+            min_stats.append(min_stat)
+            raw_stats.append(raw_stat)
+        score = SavingConstants().avg_weapon_score[rarity] * 5
+        stat_score = [0] * 5
+        ind = 0
+        while score > 0:
+            if stat_score[ind] >= 100:
+                ind = (ind + 1) % 5
+                continue
+            roll = randint(0, 3)
+            stat_score[ind] += roll
+            score -= roll
+            ind = (ind + 1) % 5
+        stats = [raw_stats[i] * stat_score[i] // 100 + min_stats[i] for i in range(5)]
+        stats[3] = 100 - stats[3]
+        return cls(SwordStats(*stats))

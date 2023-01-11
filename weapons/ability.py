@@ -1,32 +1,55 @@
+from random import randint
+
 import pygame
 
-from weapons.baseWeapon import BaseWeapon
+from utils.savingConst import SavingConstants
+from weapons.baseAbility import AbilityStats, BaseAbility
 from weapons.baseProjectile import BaseProjectile
-from utils.utils import normalize, load_image
+from utils.utils import normalize
 
 
-class Ability(BaseWeapon):
-    def __init__(self):
-        image_list = [load_image('sword', 'sword.png', color_key='white')]
-        super().__init__(image_list)
-        self.cooldown = 10
-        self.cost = 10
-
-    def attack(self, board, owner):
-        if self.current_cooldown or owner.stats.mana < self.cost:
-            return
-        owner.stats.mana -= self.cost
-        self.current_cooldown = self.cooldown
+class Ability(BaseAbility):
+    def __init__(self, ast: AbilityStats):
         bsurf = pygame.Surface((10, 10))
         bsurf.fill('red')
+        image_list = [bsurf]
+        super().__init__(ast, image_list)
+
+    def attack(self, board, owner):
+        if self.current_cooldown or owner.stats.mana < self.stats.cost:
+            return
+        owner.stats.mana -= self.stats.cost
+        self.current_cooldown = self.stats.cooldown
         vx, vy = normalize(*owner.looking_direction)
         vx *= 8
         vy *= 8
-        b = BaseProjectile(owner.pos, 10, [bsurf], 420, owner, (vx, vy), 20)
+        b = BaseProjectile(owner.pos, 10, self.image_list, 420,
+                           owner, (vx, vy), self.stats.damage)
         board.add_projectile(b)
 
-    def render(self, *args):
-        pass
-
     def serialize(self):
-        return self.cooldown, self.cost
+        return SavingConstants().get_const(Ability), self.stats.cooldown,\
+               self.stats.cost, self.stats.damage
+
+    @classmethod
+    def generate(cls, rarity, lvl):
+        raw_stats = []
+        min_stats = []
+        for min_stat, raw_stat in SavingConstants().get_stats(Ability, lvl):
+            min_stats.append(min_stat)
+            raw_stats.append(raw_stat)
+        score = SavingConstants().avg_weapon_score[rarity] * 3
+        stat_score = [0] * 5
+        ind = 0
+        while score > 0:
+            if stat_score[ind] >= 100:
+                ind = (ind + 1) % 3
+                continue
+            roll = randint(0, 3)
+            stat_score[ind] += roll
+            score -= roll
+            ind = (ind + 1) % 3
+        stats = [raw_stats[i] * stat_score[i] // 100 + min_stats[i] for i in range(3)]
+        stats[0] = max(100 - stats[0], 0)
+        stats[1] = max(0, 100 - stats[1])
+        return cls(AbilityStats(*stats))

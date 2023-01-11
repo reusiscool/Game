@@ -32,9 +32,10 @@ class BasePuzzle(BaseInteractable, ABC):
         if res != PuzzleResult.Quit:
             board.pop_loot(self)
         if res == PuzzleResult.Won:
-            board.add_noncollider(KeyItemLoot(self.pos, self.id))
+            if self.id:
+                board.add_noncollider(KeyItemLoot(self.pos, self.id))
             for lt in self.reward:
                 board.add_noncollider(lt)
 
     def serialize(self):
-        return SavingConstants().get_const(BasePuzzle), self.id, tuple(int(i) for i in self.pos)
+        return SavingConstants().get_const(BasePuzzle), tuple(int(i) for i in self.pos), self.id

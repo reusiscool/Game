@@ -32,3 +32,7 @@ class BaseWeapon(ABC):
         y += owner.y
         x, y = mum_convert(x, y)
         return x, y
+
+    @abstractmethod
+    def serialize(self):
+        pass

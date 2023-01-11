@@ -20,6 +20,10 @@ class Layout:
         self.rooms: dict[tuple, Room] = {}
 
     def generate(self):
+        self.rooms = {}
+        self.map_ = [[]]
+        self.corridors = {}
+
         avg_room_size = 6
 
         room_num = (self.size // avg_room_size) ** 2 // 2

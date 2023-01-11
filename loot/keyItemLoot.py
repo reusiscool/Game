@@ -18,5 +18,5 @@ class KeyItemLoot(BaseLoot):
         board.add_noncollider(self)
 
     def serialize(self):
-        return SavingConstants().get_const(type(self)), self.item.lock_id,\
-               (int(self.x), int(self.y))
+        return SavingConstants().get_const(type(self)),\
+               (int(self.x), int(self.y)), self.item.lock_id

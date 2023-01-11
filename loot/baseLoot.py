@@ -9,7 +9,7 @@ class BaseLoot(ABC):
     def __init__(self, pos, image_list: list[pygame.Surface]):
         self.image_index = 0
         self.x, self.y = pos
-        self.hitbox_size = 10
+        self.hitbox_size = 15
         self.image_list = image_list
 
     @property

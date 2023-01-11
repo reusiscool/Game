@@ -31,7 +31,7 @@ class Button:
 
 
 class LiarPuzzle(BasePuzzle):
-    def __init__(self, pos, id_, reward: list[BaseLoot] = None, *_):
+    def __init__(self, pos, id_=None, reward: list[BaseLoot] = None, *_):
         super().__init__(pos, id_, reward)
         self.buttons: list[Button] = []
         self.correct = None

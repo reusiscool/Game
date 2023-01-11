@@ -26,7 +26,7 @@ def read_sets():
 
 
 class TicTacToePuzzle(BasePuzzle):
-    def __init__(self, pos, id_, reward: list[BaseLoot] = None, level=0):
+    def __init__(self, pos, id_=None, reward: list[BaseLoot] = None, level=0):
         super().__init__(pos, id_, reward)
         if not tic_sets:
             read_sets()

@@ -22,3 +22,6 @@ class MoneyLoot(BaseLoot):
 
     def add_amount(self, obj, board):
         obj.stats.gold += self.amount
+
+    def serialize(self):
+        return SavingConstants().get_const(MoneyLoot), self.pos, self.amount

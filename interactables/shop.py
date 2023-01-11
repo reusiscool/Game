@@ -25,7 +25,7 @@ class Button:
 
 
 class Shop(BaseInteractable):
-    def __init__(self, pos, rarity: int, level, goods=None):
+    def __init__(self, pos, rarity: int, level=0, goods=None):
         """rarity is an integer from 0 to 3 inclusive"""
         self.rarity = rarity
         surf = pygame.Surface((50, 50))
@@ -34,6 +34,7 @@ class Shop(BaseInteractable):
         super().__init__(pos, image_list)
         self.goods = self._gen_goods(level) if goods is None else goods
         self.buttons: list[Button] = []
+        self.hitbox_size = 50
 
     def _gen_goods(self, level):
         s = SavingConstants()
@@ -42,7 +43,8 @@ class Shop(BaseInteractable):
         for _ in range(3):
             item, stats = choice(ls)
             *stats, price = stats
-            item = item(self.pos, *stats)
+            x, y = self.pos
+            item = item((x + 60, y + 60), *stats)
             goods.append((item, price))
         return goods
 
@@ -50,7 +52,8 @@ class Shop(BaseInteractable):
         self.buttons.clear()
         for i, good in enumerate(self.goods):
             item, price = good
-            r = pygame.Rect(w // 2 - w // 10 + (i - 1) * 3 * w // 10, h // 2 - w // 10, w // 5, w // 5)
+            r = pygame.Rect(w // 2 - w // 10 + (i - 1) * 3 * w // 10,
+                            h // 2 - w // 10, w // 5, w // 5)
             self.buttons.append(Button(i, r, item.desc, price))
 
     def get_desc(self):
@@ -84,3 +87,13 @@ class Shop(BaseInteractable):
                 btn.render(screen)
             pygame.display.flip()
             clock.tick(60)
+
+    def serialize(self):
+        item1, price1 = self.goods[0]
+        item1 = item1.serialize()
+        item2, price2 = self.goods[1]
+        item2 = item2.serialize()
+        item3, price3 = self.goods[2]
+        item3 = item3.serialize()
+        return SavingConstants().get_const(Shop), self.pos, self.rarity, \
+            *item1, price1, '/n', *item2, price2, '/n', *item3, price3
