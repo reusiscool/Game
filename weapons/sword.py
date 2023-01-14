@@ -49,12 +49,27 @@ class Sword(BaseWeapon):
 
     def render(self, surf, camera_x, camera_y, owner):
         self.draw_attack_lines(surf, camera_x, camera_y, owner)
-        img = pygame.transform.rotate(self.image_list[self.image_index], self.image_index)
+        hit_time = self.stats.cooldown // 4
+        time = self.stats.cooldown - self.current_cooldown
+        img = self.image_list[self.image_index]
+        if time < hit_time:
+            img = pygame.transform.rotate(img, 90 * self.image_index / hit_time)
+        elif self.current_cooldown:
+            img = pygame.transform.rotate(img, 90 - 30 * (time - hit_time) / hit_time)
         x, y = mum_convert(*owner.pos)
         off_x = img.get_width() // 2 + self.weapon_x_offset
         if not owner.looking_direction[0] < owner.looking_direction[1]:
             img = pygame.transform.flip(img, True, False)
             off_x -= self.weapon_x_offset * 2
+            if time < hit_time:
+                off_x -= time
+            elif self.current_cooldown:
+                off_x -= hit_time - (time - hit_time) // 3
+        else:
+            if time < hit_time:
+                off_x += time
+            elif self.current_cooldown:
+                off_x += hit_time - (time - hit_time) // 3
         off_y = img.get_height() + self.weapon_y_offset
         surf.blit(img, (x - camera_x - off_x, y - camera_y - off_y))
         if self.image_index == 0:

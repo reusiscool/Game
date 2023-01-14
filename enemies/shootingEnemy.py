@@ -2,6 +2,7 @@ from math import dist
 import pygame
 
 from enemies.baseEnemy import BaseEnemy, EnemyStats
+from utils.savingConst import SavingConstants
 from utils.utils import load_image
 from weapons.baseProjectile import BaseProjectile
 from utils.move import Move
@@ -33,3 +34,12 @@ class ShootingEnemy(BaseEnemy):
     @property
     def drop_amount(self):
         return 2
+
+    @classmethod
+    def read(cls, line, level):
+        pos = eval(line[1])
+        cur_hp = int(line[2])
+        speed, *stats = SavingConstants().get_stats(ShootingEnemy, level)
+        es = EnemyStats((*pos, 10),
+                        speed, cur_hp, *stats)
+        return ShootingEnemy(es)

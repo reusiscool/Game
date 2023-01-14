@@ -117,6 +117,10 @@ class SavingConstants:
         from loot.keyItemLoot import KeyItemLoot
         from weapons.ability import Ability
         from loot.moneyLoot import MoneyLoot
+        from interactables.darkShop import DarkShop
+        from loot.mapDistLoot import MapDistLoot
+        from loot.mapRoomLoot import MapRoomLoot
+        from surroundings.rooms import RoomType
 
         self._const = {
             DashEnemy: 1,
@@ -137,20 +141,23 @@ class SavingConstants:
             AbilityLoot: 16,
             Sword: 17,
             Ability: 18,
-            MoneyLoot: 19
+            MoneyLoot: 19,
+            DarkShop: 20,
+            MapDistLoot: 21,
+            MapRoomLoot: 22
         }
         self._types = {}
         for i in self._const:
             self._types[self._const[i]] = i
 
-        self.level = None
+        # self.level = None
 
-        # 4 rarities
-        self.avg_weapon_score = [50, 62, 75, 90]
+        # 4 rarities, 10 levels
+        self.avg_weapon_score = (50, 62, 75, 90)
         self.enemies_per_room = (2, 3, 3, 3, 4, 4, 4, 5, 5, 5)
         self.level_size = (40, 40, 40, 60, 60, 60, 80, 80, 80, 100)
-        self.gold_drop = [3, 4, 6, 8, 10, 12, 13, 14, 15, 20]
-        self.trap_chance = [7, 6, 6, 6, 5, 5, 5, 4, 4, 3]
+        self.gold_drop = (3, 4, 6, 8, 10, 12, 13, 14, 15, 20)
+        self.trap_chance = (7, 6, 6, 6, 5, 5, 5, 4, 4, 3)
 
         self._stats = {
             Trap: lambda x: (trap_damage(x), trap_cooldown(x), trap_time_up(x)),
@@ -190,13 +197,16 @@ class SavingConstants:
 
             [(AbilityLoot, lambda x: (Ability.generate(3, x + 3), 120 + x * 60))]
         ]
+        self.dark_shop_items = [
+            [(MapDistLoot, lambda x: (0,)),
+             (MapRoomLoot, lambda x: (RoomType.Combat, 0))],
+            [(MapDistLoot, lambda x: (40 + x * 5,))],
+            [(MapDistLoot, lambda x: (40 + x * 5,))],
+            [(MapDistLoot, lambda x: (40 + x * 5,))]
+        ]
         self._loads = {
-            ShootingEnemy: lambda x: self._load_enemy(x),
-            DashEnemy: lambda x: self._load_enemy(x),
             WeaponLoot: lambda x: self._load_weapon_loot(x),
             KeyItemLoot: lambda x: self._load_key(x),
-            Trap: lambda x: self._load_trap(x),
-            BasePuzzle: lambda x: self._load_puzzle(x),
             Portal: lambda x: self._load_portal(x),
             HealthLoot: lambda x: self._load_mana_health(x, HealthLoot),
             ManaLoot: lambda x: self._load_mana_health(x, ManaLoot),
@@ -206,7 +216,10 @@ class SavingConstants:
             AbilityLoot: lambda x: self._load_ability_loot(x),
             Sword: lambda x: self._load_sword(x),
             Ability: lambda x: self._load_ability(x),
-            MoneyLoot: lambda x: self._load_mana_health(x, MoneyLoot)
+            MoneyLoot: lambda x: self._load_mana_health(x, MoneyLoot),
+            DarkShop: self._load_dark_shop,
+            MapDistLoot: lambda line: self._load_only_pos(line, MapDistLoot),
+            MapRoomLoot: self._load_map_room_loot
         }
 
     def get_const(self, type_) -> int:
@@ -228,19 +241,14 @@ class SavingConstants:
             res.append((item, stats(lvl)))
         return res
 
-    def _load_enemy(self, line):
-        from enemies.baseEnemy import EnemyStats
-        enemy = self.get_type(int(line[0]))
-        pos = eval(line[1])
-        cur_hp = int(line[2])
-        speed, *stats = self.get_stats(enemy, self.level)
-        es = EnemyStats((*pos, 10),
-                        speed, cur_hp, *stats)
-        enemy = enemy(es)
-        return enemy
+    def get_dark_shop_items(self, rarity: int, lvl: int):
+        res = []
+        for ls in self.dark_shop_items[rarity]:
+            item, stats = ls
+            res.append((item, stats(lvl)))
+        return res
 
-    def _load_shop(self, line):
-        from interactables.shop import Shop
+    def _shop_info(self, line):
         pos = eval(line[1])
         rarity = int(line[2])
         k = 3
@@ -254,20 +262,25 @@ class SavingConstants:
                 ls.append(line[k])
                 k += 1
             if len(ls) <= 1:
+                goods.append(None)
                 continue
             *line1, cost = ls
             cost = int(cost)
             item = self.load(line1)
             goods.append((item, cost))
+        return pos, rarity, goods
+
+    def _load_shop(self, line):
+        from interactables.shop import Shop
+        pos, rarity, goods = self._shop_info(line)
         shop = Shop(pos, rarity, goods=goods)
         return shop
 
-    def _load_trap(self, line):
-        from surroundings.trap import TrapStats, Trap
-        pos = eval(line[1])
-        dmg, cd, up_cd = self.get_stats(Trap, self.level)
-        ts = TrapStats(dmg, cd, pygame.Rect(*pos, 100, 100), up_cd)
-        return Trap(ts)
+    def _load_dark_shop(self, line):
+        from interactables.darkShop import DarkShop
+        locks = list(eval(line.pop(3)))
+        pos, rarity, goods = self._shop_info(line)
+        return DarkShop(pos, rarity, locks, goods=goods)
 
     def _load_key(self, line):
         from loot.keyItemLoot import KeyItemLoot
@@ -296,6 +309,10 @@ class SavingConstants:
         pos = eval(line[1])
         return AbilityLoot(pos, self.load(line[2:]))
 
+    def _load_only_pos(self, line, type_):
+        pos = eval(line[1])
+        return type_(pos)
+
     def _load_ability(self, line):
         from weapons.baseAbility import AbilityStats
         from weapons.ability import Ability
@@ -316,21 +333,12 @@ class SavingConstants:
         pos = eval(line[2])
         return Portal(pos, locks)
 
-    def _load_puzzle(self, line):
-        from puzzles.ticPuzzle import TicTacToePuzzle
-        from puzzles.liarPuzzle import LiarPuzzle
-        from loot.moneyLoot import MoneyLoot
-        if len(line) == 2:
-            id_ = int(line[2])
-        else:
-            id_ = None
+    def _load_map_room_loot(self, line):
+        from surroundings.rooms import RoomType
+        from loot.mapRoomLoot import MapRoomLoot
         pos = eval(line[1])
-        puzzle = choice((TicTacToePuzzle, LiarPuzzle))
-        reward = []
-        for _ in range(3):
-            if randint(0, 1):
-                reward.append(MoneyLoot(pos, self.gold_drop[self.level]))
-        return puzzle(pos, id_, reward=reward)
+        room_type = RoomType(int(line[2]))
+        return MapRoomLoot(pos, room_type)
 
     def load(self, line):
         type_ = self.get_type(int(line[0]))

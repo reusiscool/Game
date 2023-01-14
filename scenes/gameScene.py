@@ -3,6 +3,7 @@ import os
 
 import pygame
 
+from surroundings.rooms import RoomType
 from utils.converters import mum_convert, back_convert
 from surroundings.board import Board
 from utils.camera import Camera
@@ -33,8 +34,7 @@ class GameScene:
         self.board: Board = Board(100, self.player, 700,
                                   self.display.get_width() * 3 // 5, is_new_session)
         self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
-        self.minimap: Minimap = Minimap(self.board.reader.map_,
-                                        self.board.reader.level.room_list, read=not is_new_session)
+        self.minimap: Minimap = Minimap(self.board, read=not is_new_session)
         x, y = self.player.pos
         x1, y1 = mum_convert(x, y)
         self.camera.snap((x1, y1), self.display.get_size())
@@ -45,7 +45,7 @@ class GameScene:
         return k == 0
 
     def _gen_player(self):
-        ps = PlayerStats((0, 0, 5), 4, 100, 100, 100, 100, 30, 3)
+        ps = PlayerStats((0, 0, 5), 4, 100, 100, 100, 100, 30, 3, 0, 4, [RoomType.Portal, RoomType.Key])
         invent = Inventory(7, self.display.get_size())
         hl = HealItem(20)
         invent.add_item(hl)
@@ -66,8 +66,11 @@ class GameScene:
                 items.append(item)
         abl = SavingConstants().load(ast)
         pos = eval(stat_line[0])
-        stats = [int(i) for i in stat_line[1:]]
-        stats = PlayerStats((*pos, 10), *stats)
+        rooms = []
+        for r in eval(stat_line[-1]):
+            rooms.append(RoomType(r))
+        stats = [int(i) for i in stat_line[1:-1]]
+        stats = PlayerStats((*pos, 10), *stats, rooms)
         weapons1 = [SavingConstants().load(w1), SavingConstants().load(w2)]
         invent = Inventory(7, self.display.get_size())
         for i in items:
@@ -102,8 +105,7 @@ class GameScene:
         if self.player.is_passing:
             self.player.is_passing = False
             self.board = Board(100, self.player, 700, self.display.get_width() * 3 // 5, True)
-            self.minimap: Minimap = Minimap(self.board.reader.map_,
-                                            self.board.reader.level.room_list)
+            self.minimap: Minimap = Minimap(self.board)
             x, y = self.player.pos
             x1, y1 = mum_convert(x, y)
             self.camera.snap((x1, y1), self.display.get_size())

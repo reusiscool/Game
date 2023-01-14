@@ -1,5 +1,7 @@
 from enum import Enum
 from abc import ABC, abstractmethod
+from random import randint, choice
+
 import pygame
 
 from interactables.baseInteractable import BaseInteractable
@@ -39,3 +41,20 @@ class BasePuzzle(BaseInteractable, ABC):
 
     def serialize(self):
         return SavingConstants().get_const(BasePuzzle), tuple(int(i) for i in self.pos), self.id
+
+    @classmethod
+    def read(cls, line, level):
+        from puzzles.ticPuzzle import TicTacToePuzzle
+        from puzzles.liarPuzzle import LiarPuzzle
+        from loot.moneyLoot import MoneyLoot
+        if len(line) == 3:
+            id_ = int(line[2])
+        else:
+            id_ = None
+        pos = eval(line[1])
+        puzzle = choice((TicTacToePuzzle, LiarPuzzle))
+        reward = []
+        for _ in range(3):
+            if randint(0, 1):
+                reward.append(MoneyLoot(pos, SavingConstants().gold_drop[level]))
+        return puzzle(pos, id_, reward=reward)

@@ -1,23 +1,26 @@
-import pygame
-
 from interactables.baseInteractable import BaseInteractable
 from items.keyItem import KeyItem
 from utils.infoDisplay import generate_description
 from utils.savingConst import SavingConstants
+from utils.utils import load_image
 
 
 class Portal(BaseInteractable):
     def __init__(self, pos, locks=None):
-        surf = pygame.Surface((30, 30))
-        surf.fill('green')
+        surf = load_image('portal', 'portal.png', color_key='white')
+        surf2 = load_image('portal', 'locked_portal.png', color_key='white')
         self.locks = [0, 1] if locks is None else locks
-        super().__init__(pos, [surf])
+        super().__init__(pos, [surf, surf2])
         self.hitbox_size = 50
 
     def get_desc(self):
         return generate_description('large_font',
                                     {f'Lock #{i}': 'locked' for i in self.locks},
                                     'Portal')
+
+    def render(self, surf, camera_x, camera_y):
+        self.image_index = not self.locks
+        super().render(surf, camera_x, camera_y)
 
     def interact(self, obj, board):
         if not self.locks:
@@ -29,9 +32,6 @@ class Portal(BaseInteractable):
                 self.locks.remove(item.lock_id)
                 obj.inventory.items.pop(i)
                 self.desc = self.get_desc()
-
-    def render(self, surf, camera_x, camera_y):
-        super().render(surf, camera_x, camera_y)
 
     def serialize(self):
         return SavingConstants().get_const(type(self)), tuple(self.locks),\

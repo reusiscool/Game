@@ -1,6 +1,7 @@
 from enemies.baseEnemy import BaseEnemy, EnemyStats
 from player import Player
 from utils.move import Move
+from utils.savingConst import SavingConstants
 from utils.utils import load_image
 
 
@@ -73,3 +74,12 @@ class DashEnemy(BaseEnemy):
             self.token_time = self.leap_time + self.stats.attack_time * 3
         elif self.cur_attack_time >= self.stats.attack_time * 2 + self.leap_time:
             self.cur_attack_time = 0
+
+    @classmethod
+    def read(cls, line, level):
+        pos = eval(line[1])
+        cur_hp = int(line[2])
+        speed, *stats = SavingConstants().get_stats(DashEnemy, level)
+        es = EnemyStats((*pos, 10),
+                        speed, cur_hp, *stats)
+        return DashEnemy(es)

@@ -3,6 +3,7 @@ import pygame
 
 from utils.converters import mum_convert
 from utils.savingConst import SavingConstants
+from utils.utils import load_image
 
 
 @dataclass
@@ -19,9 +20,7 @@ class TrapStats:
 
 class Trap:
     def __init__(self, ts: TrapStats):
-        image_list = [pygame.Surface((150, 80)), pygame.Surface((150, 80))]
-        image_list[0].fill('black')
-        image_list[1].fill('red')
+        image_list = [load_image('trap', f'trap{i // 2}.png', color_key='white') for i in range(12)]
         self.image_list = image_list
         self.ts = ts
         self.time = 0
@@ -48,11 +47,21 @@ class Trap:
             self.time = 0
 
     def render(self, surf, camera_x, camera_y):
-        ind = max(0, self.time - self.ts.cooldown)
-        ind = min(len(self.image_list) - 1, ind)
+        if 0 <= (c := (self.ts.cooldown + self.ts.time_up - self.time)) < len(self.image_list):
+            ind = c
+        else:
+            ind = max(0, self.time - self.ts.cooldown)
+            ind = min(len(self.image_list) - 1, ind)
         img = self.image_list[ind]
         x, y = mum_convert(self.ts.rect.x, self.ts.rect.y)
         surf.blit(img, (x - camera_x - img.get_width() // 2, y - camera_y))
 
     def serialize(self):
         return SavingConstants().get_const(type(self)), (int(self.ts.rect.x), int(self.ts.rect.y))
+
+    @classmethod
+    def read(cls, line, level):
+        pos = eval(line[1])
+        dmg, cd, up_cd = SavingConstants().get_stats(Trap, level)
+        ts = TrapStats(dmg, cd, pygame.Rect(*pos, 100, 100), up_cd)
+        return Trap(ts)

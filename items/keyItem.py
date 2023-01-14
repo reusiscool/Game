@@ -1,14 +1,12 @@
-import pygame
-
 from utils.savingConst import SavingConstants
 from .baseItem import BaseItem
 from utils.infoDisplay import generate_description
+from utils.utils import load_image
 
 
 class KeyItem(BaseItem):
     def __init__(self, lock_id):
-        surf = pygame.Surface((20, 20))
-        surf.fill('purple')
+        surf = load_image('key', 'key_item.png')
         desc = generate_description('large_font', {"Opens": lock_id}, 'Key')
         super().__init__(surf, desc)
         self.lock_id = lock_id

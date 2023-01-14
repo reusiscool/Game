@@ -10,7 +10,7 @@ class HealItem(BaseItem):
         surf = pygame.Surface((20, 20))
         surf.fill('red')
         self.heal_amount = heal_amount if heal_amount is not None else 10
-        desc = generate_description('large_font', {'Heals': heal_amount}, 'Heal item')
+        desc = generate_description('large_font', {'Heals': self.heal_amount}, 'Heal item')
         super().__init__(surf, desc)
 
     def use(self, owner):

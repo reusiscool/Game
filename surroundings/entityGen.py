@@ -5,6 +5,7 @@ import csv
 
 from enemies.dashEnemy import DashEnemy
 from enemies.shootingEnemy import ShootingEnemy
+from interactables.darkShop import DarkShop
 from interactables.portal import Portal
 from interactables.shop import Shop
 from loot.keyItemLoot import KeyItemLoot
@@ -91,6 +92,10 @@ class EntityGen:
                 self.noncolliders.append(Shop(room.pos_to_tiles(self.tile_size),
                                               self._rarity_roll(),
                                               self.level_number))
+            elif room.type_ == RoomType.DarkShop:
+                self.noncolliders.append(DarkShop(room.pos_to_tiles(self.tile_size),
+                                                  self._rarity_roll(), [room.id_],
+                                                  self.level_number))
 
     def write(self, entity_list):
         ls = []
@@ -111,9 +116,10 @@ class EntityGen:
                 if not line:
                     continue
                 type_ = instance.constants.get_type(int(line[0]))
-                if type_ in (DashEnemy, ShootingEnemy):
-                    ent = instance.constants.load(line)
-                    instance.enemies.append(ent)
+                if type_ in (Trap, BasePuzzle):
+                    instance.noncolliders.append(type_.read(line, number))
+                elif type_ in (DashEnemy, ShootingEnemy):
+                    instance.enemies.append(type_.read(line, number))
                 else:
                     ent = instance.constants.load(line)
                     instance.noncolliders.append(ent)

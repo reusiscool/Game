@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from entity import Entity, EntityStats, Team
 from utils.move import Move
 from utils.utils import normalize, load_image
+from surroundings.rooms import RoomType
 
 
 @dataclass(slots=True)
@@ -11,7 +12,9 @@ class PlayerStats(EntityStats):
     max_mana: int
     dash_cooldown: int
     dash_speed: int
-    gold: int = 0
+    gold: int
+    reveal_distance: int
+    revealed_rooms: list[RoomType]
 
     def add_mana(self, amount):
         self.mana = min(self.max_mana, self.mana + amount)
@@ -109,7 +112,8 @@ class Player(Entity):
     def _serialize_stats(self):
         return tuple(int(i) for i in self.pos), self.stats.speed, self.stats.health,\
                self.stats.max_health, self.stats.mana, self.stats.max_mana,\
-               self.stats.dash_cooldown, self.stats.dash_speed, self.stats.gold
+               self.stats.dash_cooldown, self.stats.dash_speed, self.stats.gold,\
+               self.stats.reveal_distance, tuple(i.value for i in self.stats.revealed_rooms)
 
     def _serialize_tools(self):
         ls = []

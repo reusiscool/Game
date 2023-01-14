@@ -3,12 +3,13 @@ import pygame
 from loot.baseLoot import BaseLoot
 from items.keyItem import KeyItem
 from utils.savingConst import SavingConstants
+from utils.utils import load_image
 
 
 class KeyItemLoot(BaseLoot):
     def __init__(self, pos, id_):
-        s = pygame.Surface((10, 10))
-        s.fill('gold')
+        s = load_image('key', 'key_item.png', color_key='white')
+        # s = pygame.transform.scale(s, (20, 20))
         super().__init__(pos, [s])
         self.item = KeyItem(id_)
 

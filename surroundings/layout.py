@@ -143,7 +143,7 @@ class Layout:
                 rt = choice(oneway)
                 used[i] = rt
                 if rt == RoomType.DarkShop:
-                    next_room = corridors[i][0]
+                    next_room = d[0]
                     used[next_room] = RoomType.Puzzle
                     paired.add((next_room, i))
             else:
@@ -152,29 +152,26 @@ class Layout:
         keys = 2
         portaled = False
         for i, d in enumerate(corridors):
-            if used[i] == RoomType.Null:
-                if keys:
-                    used[i] = RoomType.Key
-                    keys -= 1
-                    continue
-                if not portaled:
-                    used[i] = RoomType.Portal
-                    portaled = True
-                    continue
-                used[i] = RoomType.Player
-                break
+            if used[i] != RoomType.Null:
+                continue
+            if keys:
+                used[i] = RoomType.Key
+                keys -= 1
+                continue
+            if not portaled:
+                used[i] = RoomType.Portal
+                portaled = True
+                continue
+            used[i] = RoomType.Player
+            break
         c = 100
         for key in used:
             c += 1
-            if used[key] == RoomType.DarkShop:
-                for roms in paired:
-                    if key in roms:
-                        r1, r2 = roms
-                        res[r1] = Room(room_rects[r1], c, used[r1])
-                        res[r2] = Room(room_rects[r2], c, used[r2])
-                        break
-                continue
             res[key] = Room(room_rects[key], c, used[key])
+        for roms in paired:
+            r1, r2 = roms
+            res[r1] = Room(room_rects[r1], c, used[r1])
+            res[r2] = Room(room_rects[r2], c, used[r2])
         for rm in res:
             self.add_room(rm)
 
