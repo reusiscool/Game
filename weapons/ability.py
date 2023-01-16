@@ -1,23 +1,21 @@
 from random import randint
 
-import pygame
-
+from mixer import single_mixer
 from utils.savingConst import SavingConstants
 from weapons.baseAbility import AbilityStats, BaseAbility
 from weapons.baseProjectile import BaseProjectile
-from utils.utils import normalize
+from utils.utils import normalize, load_image
 
 
 class Ability(BaseAbility):
     def __init__(self, ast: AbilityStats):
-        bsurf = pygame.Surface((10, 10))
-        bsurf.fill('red')
-        image_list = [bsurf]
-        super().__init__(ast, image_list)
+        img_l = [load_image('ability', f'ability{i}.png', color_key='white') for i in range(6)]
+        super().__init__(ast, img_l + list(reversed(img_l)))
 
     def attack(self, board, owner):
         if self.current_cooldown or owner.stats.mana < self.stats.cost:
             return
+        single_mixer().on_ability()
         owner.stats.mana -= self.stats.cost
         self.current_cooldown = self.stats.cooldown
         vx, vy = normalize(*owner.looking_direction)

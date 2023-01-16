@@ -4,7 +4,8 @@ from typing import Tuple
 import pygame
 
 from enemies.lootTable import EnemyLootTable
-from utils.customFont import single_font
+from loot.moneyLoot import MoneyLoot
+from mixer import single_mixer
 from entity import Entity, EntityStats, Team
 from utils.savingConst import SavingConstants
 
@@ -24,7 +25,6 @@ class BaseEnemy(Entity, ABC):
         self.stats = es
         self.player_pos = None
         self.cur_attack_time = 0
-        self.font = single_font('large_font')
         self.loot_table = EnemyLootTable()
         self.going_left = False
         self.patrol_q = []
@@ -42,9 +42,15 @@ class BaseEnemy(Entity, ABC):
         self._move_y(dy / 3 if self.patrol_q else dy, ls)
         if self.stats.health > 0:
             board.add_enemy(self)
-        elif self.loot_table:
+            return
+        single_mixer().on_death()
+        if self.loot_table:
             for _ in range(self.drop_amount):
-                obj = self.loot_table.roll()(self.pos)
+                type_ = self.loot_table.roll()
+                if type_ == MoneyLoot:
+                    obj = type_(self.pos, board.reader.level.level_number)
+                else:
+                    obj = type_(self.pos)
                 if obj is not None:
                     board.add_noncollider(obj)
 

@@ -7,15 +7,14 @@ from utils.infoDisplay import generate_description
 
 
 class Minimap:
-    def __init__(self, board, textures: dict[int, pygame.Surface] = None, read=False):
+    def __init__(self, board, read=False):
         self.rooms = board.reader.level.room_list
         self.map_ = board.reader.map_
+        self.colors = ['green', 'white', 'yellow', 'grey', 'black', 'purple',
+                  'blue', 'purple', 'white', 'red']
         self.size = len(self.map_)
         self.ts = 10
-        if textures is None:
-            self.textures = self.get_pics()
-        else:
-            self.textures = textures
+        self.textures = self.get_pics()
         self.player_pos = (0, 0)
         self.gap = self.ts * 15
         self.surf = pygame.Surface((self.size * self.ts + self.gap * 2,
@@ -38,7 +37,7 @@ class Minimap:
                        (x * self.ts + self.gap, y * self.ts + self.gap))
 
     def _read(self):
-        with open(os.path.join('levels', 'minimap.csv')) as f:
+        with open(os.path.join('save_files', 'minimap.csv')) as f:
             reader = csv.reader(f)
             ls = []
             for row in reader:
@@ -66,11 +65,9 @@ class Minimap:
 
     def get_pics(self):
         d = {}
-        colors = ['green', 'white', 'yellow', 'grey', 'black', 'purple',
-                  'blue', 'purple', 'white', 'red']
         for i in range(10):
             s = pygame.Surface((self.ts, self.ts))
-            s.fill(colors[i])
+            s.fill(self.colors[i])
             d[i] = s
         return d
 
@@ -114,7 +111,7 @@ class Minimap:
              'Reveal distance caps at': self.max_reveal_distance}
         if self.revealed_rooms:
             for r in self.revealed_rooms:
-                d[r] = 'Can be seen'
+                d[r] = self.colors[r.value]
         return generate_description('large_font', d, 'Map stats')
 
     def render(self, surf: pygame.Surface):
@@ -128,6 +125,6 @@ class Minimap:
         ls = []
         for row in self.revealed_map:
             ls.append([int(i) for i in row])
-        with open(os.path.join('levels', 'minimap.csv'), 'w') as f:
+        with open(os.path.join('save_files', 'minimap.csv'), 'w') as f:
             writer = csv.writer(f)
             writer.writerows(ls)

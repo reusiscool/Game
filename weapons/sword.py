@@ -4,6 +4,7 @@ from random import randint
 
 import pygame
 
+from mixer import single_mixer
 from utils.savingConst import SavingConstants
 from weapons.baseWeapon import BaseWeapon
 from utils.converters import mum_convert
@@ -30,6 +31,7 @@ class Sword(BaseWeapon):
 
     def attack(self, board, owner):
         if self.current_cooldown:
+            single_mixer().on_fail()
             return
         sx, sy = owner.pos
         ls = board.get_entities(owner.pos, self.stats.range_)

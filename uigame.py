@@ -22,7 +22,7 @@ class UIGame:
         self.slot2 = pygame.Rect(self.slot1.right + 2 * self.gap, self.y + self.gap, a, a)
 
     def _get_level(self):
-        with open(os.path.join('levels', 'GameState.txt')) as f:
+        with open(os.path.join('save_files', 'GameState.txt')) as f:
             level = int(f.readline())
         return level
 

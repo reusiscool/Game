@@ -39,13 +39,19 @@ class GameScene:
         x1, y1 = mum_convert(x, y)
         self.camera.snap((x1, y1), self.display.get_size())
 
+    def on_rescale(self):
+        self.W, self.H = self.screen.get_size()
+        self.display = pygame.Surface((self.W // 2, self.H // 2))
+        self.board.render_distance = self.display.get_width() * 3 // 5
+        self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
+
     def _gen_new(self):
-        with open(os.path.join('levels', 'GameState.txt')) as f:
+        with open(os.path.join('save_files', 'GameState.txt')) as f:
             k = int(f.readline())
         return k == 0
 
     def _gen_player(self):
-        ps = PlayerStats((0, 0, 5), 4, 100, 100, 100, 100, 30, 3, 0, 4, [RoomType.Portal, RoomType.Key])
+        ps = PlayerStats((0, 0, 5), 4, 100, 100, 100, 100, 30, 3, 0, 4, [])
         invent = Inventory(7, self.display.get_size())
         hl = HealItem(20)
         invent.add_item(hl)
@@ -55,7 +61,7 @@ class GameScene:
         return Player(ps, invent, [Sword(sw_st1), Sword(sw_st2)], Ability(ast))
 
     def _load_player(self):
-        with open(os.path.join('levels', 'player.csv')) as f:
+        with open(os.path.join('save_files', 'player.csv')) as f:
             reader = csv.reader(f)
             stat_line = next(reader)
             w1 = next(reader)
@@ -99,6 +105,17 @@ class GameScene:
         fps_t = self.font.render(str(int(self.clock.get_fps())), True, 'Blue')
         self.display.blit(fps_t, (0, 0))
 
+    def restart(self):
+        with open(os.path.join('save_files', 'GameState.txt'), 'w') as f:
+            f.write('0')
+        self.player = self._gen_player()
+        self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
+        self.board = Board(100, self.player, 700, self.display.get_width() * 3 // 5, True)
+        self.minimap: Minimap = Minimap(self.board)
+        x, y = self.player.pos
+        x1, y1 = mum_convert(x, y)
+        self.camera.snap((x1, y1), self.display.get_size())
+
     def update(self):
         if self.player.stats.health <= 0:
             self.board.on_death()
@@ -134,12 +151,13 @@ class GameScene:
             self.minimap.render(self.display)
 
     def run(self):
+        self.on_rescale()
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return Scene.Exit
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    return Scene.TitleScene
+                    return Scene.Pause
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
                     if pygame.key.get_pressed()[pygame.K_TAB]:
                         self.player.inventory.use_item(pygame.mouse.get_pos(), self.player)

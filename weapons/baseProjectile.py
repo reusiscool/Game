@@ -1,3 +1,5 @@
+from random import randint
+
 import pygame
 
 from utils.converters import mum_convert
@@ -15,7 +17,7 @@ class BaseProjectile:
         self.time = 0
         self.vx, self.vy = vlist
         self.damage = damage
-        self.image_index = 0
+        self.image_index = randint(0, len(self.image_list) - 1)
 
     @property
     def rect(self):

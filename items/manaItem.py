@@ -1,14 +1,12 @@
-import pygame
-
 from items.baseItem import BaseItem
 from utils.infoDisplay import generate_description
 from utils.savingConst import SavingConstants
+from utils.utils import load_image
 
 
 class ManaItem(BaseItem):
     def __init__(self, mana_amount=None):
-        surf = pygame.Surface((20, 20))
-        surf.fill('blue')
+        surf = load_image('mana', 'mana_item.png')
         self.mana_amount = mana_amount if mana_amount is not None else 10
         desc = generate_description('large_font', {'Mana amount': mana_amount}, 'Mana item')
         super().__init__(surf, desc)

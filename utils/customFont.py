@@ -37,7 +37,6 @@ class CustomFont:
         for x in range(surf.get_width()):
             if surf.get_at((x, 0))[0] == 127:
                 s = surf.subsurface(x - cur_width, 0, cur_width, self.height)
-                s.set_colorkey('black')
                 self.characters[order[cur_char]] = s
                 cur_width = 0
                 cur_char += 1

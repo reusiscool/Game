@@ -112,7 +112,7 @@ class Layout:
 
     @classmethod
     def read_from(cls, lvl_num):
-        with open(os.path.join('.', 'levels', 'layout.csv')) as f:
+        with open(os.path.join('.', 'save_files', 'layout.csv')) as f:
             reader = csv.reader(f)
             map_ = []
             for row in reader:
@@ -120,7 +120,7 @@ class Layout:
                     continue
                 map_.append([int(i) for i in row])
         inst = Layout(lvl_num, len(map_))
-        with open(os.path.join('.', 'levels', 'rooms.csv')) as f:
+        with open(os.path.join('.', 'save_files', 'rooms.csv')) as f:
             reader = csv.reader(f)
             for row in reader:
                 if not row:
@@ -176,10 +176,10 @@ class Layout:
             self.add_room(rm)
 
     def write(self):
-        with open(os.path.join('.', 'levels', 'layout.csv'), 'w') as f:
+        with open(os.path.join('.', 'save_files', 'layout.csv'), 'w') as f:
             writer = csv.writer(f)
             writer.writerows(self.map_)
-        with open(os.path.join('.', 'levels', 'rooms.csv'), 'w') as f:
+        with open(os.path.join('.', 'save_files', 'rooms.csv'), 'w') as f:
             writer = csv.writer(f)
             for i in self.rooms:
                 room = self.rooms[i]

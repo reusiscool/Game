@@ -1,8 +1,3 @@
-from random import randint, choice
-
-import pygame
-
-
 def _damage_scale(start_damage, lvl):
     return start_damage + start_damage * lvl // 12
 
@@ -152,7 +147,7 @@ class SavingConstants:
 
         # self.level = None
 
-        # 4 rarities, 10 levels
+        # 4 rarities, 10 save_files
         self.avg_weapon_score = (50, 62, 75, 90)
         self.enemies_per_room = (2, 3, 3, 3, 4, 4, 4, 5, 5, 5)
         self.level_size = (40, 40, 40, 60, 60, 60, 80, 80, 80, 100)

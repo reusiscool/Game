@@ -23,7 +23,7 @@ class LevelReader:
         self.wall_img = load_image('tiles', 'wall_tile.png', color_key='white')
 
     def _init(self, generate_new):
-        with open(os.path.join('levels', 'GameState.txt')) as f:
+        with open(os.path.join('save_files', 'GameState.txt')) as f:
             k = int(f.readline())
         if k == 0 or generate_new:
             lvl_num = k + 1
@@ -34,7 +34,7 @@ class LevelReader:
                     break
             self.entity_reader = EntityGen(lvl_num, self.tile_size)
             self.entity_reader.generate(self.level.room_list)
-            with open(os.path.join('levels', 'GameState.txt'), 'w') as f:
+            with open(os.path.join('save_files', 'GameState.txt'), 'w') as f:
                 f.write(str(lvl_num))
         else:
             self.level = Layout.read_from(k)

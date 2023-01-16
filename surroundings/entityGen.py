@@ -102,7 +102,7 @@ class EntityGen:
         for entity in entity_list:
             if self.constants.contains(type(entity)) or isinstance(entity, BasePuzzle):
                 ls.append(entity.serialize())
-        with open(os.path.join('levels', 'entities.csv'), 'w') as f:
+        with open(os.path.join('save_files', 'entities.csv'), 'w') as f:
             writer = csv.writer(f)
             writer.writerows(ls)
 
@@ -110,7 +110,7 @@ class EntityGen:
     def read(cls, number: int, tile_size: int):
         instance = cls(number, tile_size)
         instance.constants.level = number
-        with open(os.path.join('levels', 'entities.csv')) as f:
+        with open(os.path.join('save_files', 'entities.csv')) as f:
             reader = csv.reader(f)
             for line in reader:
                 if not line:

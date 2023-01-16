@@ -1,18 +1,15 @@
-import pygame
-
 from interactables.baseInteractable import BaseInteractable
 from utils.infoDisplay import generate_description
 from utils.savingConst import SavingConstants
+from utils.utils import load_image
 from weapons.ability import Ability
 
 
 class AbilityLoot(BaseInteractable):
     def __init__(self, pos, ability: Ability):
-        s = pygame.Surface((20, 20))
-        s.fill('cyan')
-        image_list = [s]
+        s = load_image('ability', 'ability_loot.png', color_key='white')
         self.ability = ability
-        super().__init__(pos, image_list)
+        super().__init__(pos, [s])
         self.hitbox_size = 40
 
     def get_desc(self):

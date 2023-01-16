@@ -14,8 +14,9 @@ class MapRoomLoot(BaseLoot):
 
     @property
     def desc(self):
-        return generate_description('large_font', ['Allows you to read',
-                                                   f'{self.room_type} rooms on map'], "Map read item")
+        return generate_description('large_font',
+                                    ['Allows you to read', f'{self.room_type} rooms on map'],
+                                    "Map read item")
 
     def add_amount(self, obj, board):
         if self.room_type not in obj.stats.revealed_rooms:

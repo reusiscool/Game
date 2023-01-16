@@ -1,7 +1,7 @@
 from math import dist
-import pygame
 
 from enemies.baseEnemy import BaseEnemy, EnemyStats
+from mixer import single_mixer
 from utils.savingConst import SavingConstants
 from utils.utils import load_image
 from weapons.baseProjectile import BaseProjectile
@@ -19,11 +19,15 @@ class ShootingEnemy(BaseEnemy):
             vecx, vecy = board.player.x - self.x, board.player.y - self.y
             dist_to_player = dist(self.pos, board.player.pos)
             if dist_to_player <= self.stats.attack_distance:
-                bsurf = pygame.Surface((10, 10))
-                bsurf.fill('red')
+                single_mixer().on_ability()
+                image_list = [load_image('enemy_ability',
+                                         f'enemy_ability{i}.png',
+                                         color_key='white')
+                              for i in range(6)]
                 vec = Move(vecx, vecy, normalize=True)
                 vec.amplify(10)
-                b = BaseProjectile(self.pos, 10, [bsurf], 420, self, vec.vector, self.stats.damage)
+                b = BaseProjectile(self.pos, 10, image_list + image_list[::-1],
+                                   420, self, vec.vector, self.stats.damage)
                 board.add_projectile(b)
             self.cur_attack_time = 0
 

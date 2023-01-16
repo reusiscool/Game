@@ -1,15 +1,13 @@
-import pygame
-
 from loot.baseLoot import BaseLoot
 from player import Player
 from utils.infoDisplay import generate_description
 from utils.savingConst import SavingConstants
+from utils.utils import load_image
 
 
 class ManaLoot(BaseLoot):
     def __init__(self, pos, amount=None):
-        surf = pygame.Surface((10, 10))
-        surf.fill('blue')
+        surf = load_image('mana', 'mana_loot.png', color_key='white')
         super().__init__(pos, [surf])
         self.amount = amount if amount is not None else 10
 

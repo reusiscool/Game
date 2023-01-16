@@ -179,11 +179,11 @@ class Board:
         for key in self.noncolliders:
             ls += self.noncolliders[key]
         self.reader.write(ls)
-        with open(os.path.join('levels', 'player.csv'), 'w', newline='') as f:
+        with open(os.path.join('save_files', 'player.csv'), 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerows(self.player.serialize())
 
     def on_death(self):
         self.dead = True
-        with open(os.path.join('levels', 'GameState.txt'), 'w') as f:
+        with open(os.path.join('save_files', 'GameState.txt'), 'w') as f:
             f.write('0')
