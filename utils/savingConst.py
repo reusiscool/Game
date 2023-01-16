@@ -151,7 +151,7 @@ class SavingConstants:
         self.avg_weapon_score = (50, 62, 75, 90)
         self.enemies_per_room = (2, 3, 3, 3, 4, 4, 4, 5, 5, 5)
         self.level_size = (40, 40, 40, 60, 60, 60, 80, 80, 80, 100)
-        self.gold_drop = (3, 4, 6, 8, 10, 12, 13, 14, 15, 20)
+        self.gold_drop = (8, 9, 10, 11, 12, 13, 14, 16, 18, 20)
         self.trap_chance = (7, 6, 6, 6, 5, 5, 5, 4, 4, 3)
 
         self._stats = {
@@ -184,20 +184,28 @@ class SavingConstants:
 
             [(ManaItemLoot, lambda x: (25, healitem_cost(x))),
              (HealItemLoot, lambda x: (15, healitem_cost(x))),
-             (WeaponLoot, lambda lvl: (Sword.generate(2, lvl + 2), 60 + lvl * 40))],
+             (HealthLoot, lambda x: (15, health_cost(x))),
+             (ManaLoot, lambda x: (25, mana_cost(x)))],
 
             [(ManaItemLoot, lambda x: (35, healitem_cost(x))),
-             (AbilityLoot, lambda x: (Ability.generate(2, x + 2), 60 + x * 30)),
-             (WeaponLoot, lambda x: (Sword.generate(3, x + 3), 120 + x * 60))],
+             (HealItemLoot, lambda x: (20, healitem_cost(x))),
+             (WeaponLoot, lambda x: (Sword.generate(2, x + 2), 80 + x * 25))],
 
-            [(AbilityLoot, lambda x: (Ability.generate(3, x + 3), 120 + x * 60))]
+            [(AbilityLoot, lambda x: (Ability.generate(2, x + 2), 80 + x * 25)),
+             (WeaponLoot, lambda x: (Sword.generate(3, x + 3), 100 + x * 40))]
         ]
         self.dark_shop_items = [
-            [(MapDistLoot, lambda x: (0,)),
-             (MapRoomLoot, lambda x: (RoomType.Combat, 0))],
-            [(MapDistLoot, lambda x: (40 + x * 5,))],
-            [(MapDistLoot, lambda x: (40 + x * 5,))],
-            [(MapDistLoot, lambda x: (40 + x * 5,))]
+
+            [(ManaItemLoot, lambda x: (35, healitem_cost(x))),
+             (HealItemLoot, lambda x: (20, healitem_cost(x)))],
+
+            [(ManaItemLoot, lambda x: (45, healitem_cost(x))),
+             (HealItemLoot, lambda x: (30, healitem_cost(x))),
+             (MapDistLoot, lambda x: (30 + x * 5,))],
+
+            [(MapDistLoot, lambda x: (20 + x * 3,)),
+             (MapRoomLoot, lambda x: (RoomType.Combat, 40 + x * 3))],
+            [(AbilityLoot, lambda x: (Ability.generate(3, x + 3), 100 + x * 40))]
         ]
         self._loads = {
             WeaponLoot: lambda x: self._load_weapon_loot(x),

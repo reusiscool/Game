@@ -56,5 +56,5 @@ class BasePuzzle(BaseInteractable, ABC):
         reward = []
         for _ in range(3):
             if randint(0, 1):
-                reward.append(MoneyLoot(pos, SavingConstants().gold_drop[level]))
+                reward.append(MoneyLoot(pos, SavingConstants().gold_drop[level - 1]))
         return puzzle(pos, id_, reward=reward)

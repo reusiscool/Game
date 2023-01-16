@@ -14,7 +14,7 @@ class SettingScene:
         self.font = single_font('large_font')
         self.dropped = False
         self.is_fullscreen = False
-        self.possible_res = [(1920, 1080), (1600, 900), (1200, 960), (1024, 768), (800, 600)]
+        self.possible_res = [(1920, 1080), (1600, 900), (1440, 1080), (1280, 960), (1024, 768), (800, 600), (960, 720)]
         self.volume = 0
         self.resolution = (0, 0)
         self._read()
@@ -51,7 +51,7 @@ class SettingScene:
     def _gen_drop(self):
         self.drop_buttons_txt.clear()
         self.drop_buttons.clear()
-        bw, bh = self.W // 10, self.H // 20
+        bw, bh = self.W // 10, self.H // 30
         y0 = self.dropdown.bottom
         for i in range(len(self.possible_res)):
             self.drop_buttons.append(pygame.Rect(self.W // 2 - bw, y0 + i * bh * 2, bw * 2, bh * 2))

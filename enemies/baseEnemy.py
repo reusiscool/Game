@@ -48,7 +48,7 @@ class BaseEnemy(Entity, ABC):
             for _ in range(self.drop_amount):
                 type_ = self.loot_table.roll()
                 if type_ == MoneyLoot:
-                    obj = type_(self.pos, board.reader.level.level_number)
+                    obj = type_(self.pos, SavingConstants().gold_drop[board.reader.level.level_number - 1])
                 else:
                     obj = type_(self.pos)
                 if obj is not None:

@@ -1,6 +1,5 @@
 import csv
 import os
-
 import pygame
 
 from surroundings.rooms import RoomType
@@ -44,6 +43,7 @@ class GameScene:
         self.display = pygame.Surface((self.W // 2, self.H // 2))
         self.board.render_distance = self.display.get_width() * 3 // 5
         self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
+        self.player.inventory.resize(self.display.get_size())
 
     def _gen_new(self):
         with open(os.path.join('save_files', 'GameState.txt')) as f:
@@ -120,6 +120,9 @@ class GameScene:
         if self.player.stats.health <= 0:
             self.board.on_death()
         if self.player.is_passing:
+            if self.board.reader.level.level_number == 10:
+                print('hooraay')
+                return
             self.player.is_passing = False
             self.board = Board(100, self.player, 700, self.display.get_width() * 3 // 5, True)
             self.minimap: Minimap = Minimap(self.board)

@@ -45,7 +45,7 @@ class EntityGen:
         dmg, cd, up_cd = self.constants.get_stats(Trap, self.level_number)
         for x in range(room.rect.x, room.rect.right):
             for y in range(room.rect.y, room.rect.bottom):
-                if randint(0, self.constants.trap_chance[self.level_number]):
+                if randint(0, self.constants.trap_chance[self.level_number - 1]):
                     continue
                 dx, dy = x * self.tile_size, y * self.tile_size
                 ts = TrapStats(dmg, cd, pygame.Rect(dx, dy, self.tile_size, self.tile_size), up_cd)
@@ -80,7 +80,7 @@ class EntityGen:
                 reward = []
                 for _ in range(3):
                     if randint(0, 1):
-                        reward.append(MoneyLoot(pos, self.constants.gold_drop[self.level_number]))
+                        reward.append(MoneyLoot(pos, self.constants.gold_drop[self.level_number - 1]))
                 self.noncolliders.append(puzzle(pos, room.id_, reward))
             elif room.type_ == RoomType.Weapon:
                 self.noncolliders.append(WeaponLoot(room.pos_to_tiles(self.tile_size),

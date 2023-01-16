@@ -10,6 +10,9 @@ class Inventory:
         self.rects: list[pygame.Rect] = self.gen_rects(surf_size)
         self.cur_desc = None
 
+    def resize(self, surf_size):
+        self.rects: list[pygame.Rect] = self.gen_rects(surf_size)
+
     @property
     def is_full(self):
         return len(self.items) >= self.size
