@@ -1,6 +1,6 @@
 from random import randint
 
-from mixer import single_mixer
+from mixer import Mixer
 from utils.savingConst import SavingConstants
 from weapons.baseAbility import AbilityStats, BaseAbility
 from weapons.baseProjectile import BaseProjectile
@@ -15,7 +15,7 @@ class Ability(BaseAbility):
     def attack(self, board, owner):
         if self.current_cooldown or owner.stats.mana < self.stats.cost:
             return
-        single_mixer().on_ability()
+        Mixer().on_ability()
         owner.stats.mana -= self.stats.cost
         self.current_cooldown = self.stats.cooldown
         vx, vy = normalize(*owner.looking_direction)

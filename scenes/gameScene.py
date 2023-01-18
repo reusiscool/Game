@@ -1,7 +1,12 @@
 import csv
 import os
+from random import randint
+
 import pygame
 
+from entity import Entity
+from mixer import Mixer
+from surroundings.particles import Particle
 from surroundings.rooms import RoomType
 from utils.converters import mum_convert, back_convert
 from surroundings.board import Board
@@ -11,6 +16,7 @@ from items.healItem import HealItem
 from minimap import Minimap
 from player import Player, PlayerStats
 from uigame import UIGame
+from utils.customFont import single_font
 from utils.savingConst import SavingConstants
 from utils.utils import normalize
 from scenes.scene import Scene
@@ -29,6 +35,7 @@ class GameScene:
         self.clock = pygame.time.Clock()
         self.camera = Camera([0, 0])
         is_new_session = self._gen_new()
+        self.particles = []
         self.player = self._gen_player() if is_new_session else self._load_player()
         self.board: Board = Board(100, self.player, 700,
                                   self.display.get_width() * 3 // 5, is_new_session)
@@ -37,6 +44,8 @@ class GameScene:
         x, y = self.player.pos
         x1, y1 = mum_convert(x, y)
         self.camera.snap((x1, y1), self.display.get_size())
+        self.death_time = 0
+        self.won = False
 
     def on_rescale(self):
         self.W, self.H = self.screen.get_size()
@@ -108,6 +117,8 @@ class GameScene:
     def restart(self):
         with open(os.path.join('save_files', 'GameState.txt'), 'w') as f:
             f.write('0')
+        self.death_time = 0
+        self.won = False
         self.player = self._gen_player()
         self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
         self.board = Board(100, self.player, 700, self.display.get_width() * 3 // 5, True)
@@ -117,11 +128,11 @@ class GameScene:
         self.camera.snap((x1, y1), self.display.get_size())
 
     def update(self):
-        if self.player.stats.health <= 0:
-            self.board.on_death()
+        if self.player.stats.health <= 0 and not self.death_time:
+            self.death_time = 20
         if self.player.is_passing:
             if self.board.reader.level.level_number == 10:
-                print('hooraay')
+                self.won = True
                 return
             self.player.is_passing = False
             self.board = Board(100, self.player, 700, self.display.get_width() * 3 // 5, True)
@@ -142,6 +153,10 @@ class GameScene:
         self.minimap.update(self.board)
         if pygame.key.get_pressed()[pygame.K_TAB]:
             self.player.inventory.update(pygame.mouse.get_pos())
+        for ent in self.board.get_entities(self.player.pos, self.board.update_distance):
+            if isinstance(ent, Entity) and ent.damage_time == 1:
+                for _ in range(5):
+                    self.particles.append(Particle(ent.pos, 5))
 
     def render(self):
         nx, ny = self.camera.pos
@@ -152,6 +167,9 @@ class GameScene:
             self.player.inventory.render(self.display)
         if pygame.key.get_pressed()[pygame.K_LCTRL]:
             self.minimap.render(self.display)
+        for i in range(len(self.particles) - 1, -1, -1):
+            if not self.particles[i].render(self.display, *self.camera.pos):
+                self.particles.pop(i)
 
     def run(self):
         self.on_rescale()
@@ -173,6 +191,17 @@ class GameScene:
                     self.player.change_weapon()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_e:
                     self.player.is_interacting = True
+            if self.death_time:
+                if self.death_time == 1:
+                    if not randint(0, 20):
+                        self.fake_death()
+                        continue
+                    self.board.on_death()
+                    return Scene.DeathScreen
+                self.death_time -= 1
+            if self.won:
+                self.board.on_death()
+                return Scene.WinScreen
             x, y = self.player.pos
             x1, y1 = mum_convert(x, y)
             self.camera.adjust((x1, y1), self.display.get_size())
@@ -180,11 +209,72 @@ class GameScene:
             self.display.fill((250, 80, 100))
             self.check_controls()
             self.render()
-            self.fps_counter()
-            pygame.draw.circle(self.display, 'yellow', (self.W // 4, self.H // 4), 3)
+            # self.fps_counter()
             self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             pygame.display.update()
             self.clock.tick(self.FPS)
+
+    def fake_death(self):
+        black_time = 60
+        first_sign_time = 150
+        second_sign_time = 100
+        fade_time = 200
+        self.death_time = 0
+        self.player.stats.health = self.player.stats.max_health
+        self.board.dead = False
+        self.board.add_entity(self.player)
+        font = single_font('large_font')
+        first_sign_txt = self.scale(font.render('There are fates worse than death.'), (self.W // 2, self.H // 2))
+        first_sign_txt.set_colorkey('black')
+
+        second_sign_txt = self.scale(font.render('Get up.'), (self.W // 2, self.H // 2))
+        second_sign_txt.set_colorkey('black')
+
+        mixer = Mixer()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return Scene.Exit
+            self.screen.fill('black')
+            if black_time:
+                black_time -= 1
+                if black_time == 1:
+                    mixer.on_cassette()
+            elif first_sign_time:
+                self.blit_centre(self.screen, first_sign_txt)
+                first_sign_time -= 1
+                if first_sign_time == 1:
+                    mixer.on_cassette()
+            elif second_sign_time:
+                self.blit_centre(self.screen, second_sign_txt)
+                second_sign_time -= 1
+                if second_sign_time == 20:
+                    mixer.on_reanimate()
+            elif fade_time:
+                self.blit_centre(self.screen, second_sign_txt)
+                s = pygame.Surface((self.W, self.H), pygame.SRCALPHA)
+                s.fill((255, 255, 255, 225 * (200 - fade_time) // 200))
+                self.screen.blit(s, (0, 0))
+                fade_time -= 1
+            else:
+                mixer.on_reanimate_end()
+                return
+            pygame.display.update()
+            self.clock.tick(60)
+
+    def blit_centre(self, blit_surf, surf):
+        w, h = blit_surf.get_size()
+        sw, sh = surf.get_size()
+        blit_surf.blit(surf, ((w - sw) // 2, (h - sh) // 2))
+
+    def scale(self, surf, to_size):
+        sx, sy = to_size
+        x, y = surf.get_size()
+        k = min(sx / x, sy / y) * 0.85
+        x *= k
+        y *= k
+        return pygame.transform.scale(surf, (x, y))
 
     def save(self):
         self.board.save()

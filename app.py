@@ -1,10 +1,13 @@
 import pygame
 import sys
+
+from scenes.deathScreen import DeathScreen
 from scenes.gameScene import GameScene
 from scenes.pauseScene import PauseScene
 from scenes.scene import Scene
 from scenes.settingScene import SettingScene
 from scenes.titleScene import TitleScene
+from scenes.winScreen import WinScreen
 
 
 class App:
@@ -21,6 +24,8 @@ class App:
         self.gs = GameScene(self.screen)
         self.ts = TitleScene(self.screen)
         self.pause = PauseScene(self.screen)
+        self.dead = DeathScreen(self.screen)
+        self.win = WinScreen(self.screen)
         self.cur_scene = self.ts
 
     def run(self):
@@ -47,3 +52,9 @@ class App:
                 continue
             if res == Scene.SettingScene:
                 self.cur_scene = self.settings
+                continue
+            if res == Scene.DeathScreen:
+                self.cur_scene = self.dead
+                continue
+            if res == Scene.WinScreen:
+                self.cur_scene = self.win

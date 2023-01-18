@@ -9,7 +9,7 @@ from puzzles.ticLogic import Mark
 from puzzles.basePuzzle import BasePuzzle, PuzzleResult
 from puzzles.ticLogic import GameState
 from utils.infoDisplay import generate_description
-
+from utils.utils import load_image
 
 tic_sets = []
 
@@ -32,6 +32,9 @@ class TicTacToePuzzle(BasePuzzle):
             read_sets()
         fk, self.draw_wins = self._get_set(level)
         self.board = TicTacToeBoard(fk)
+
+    def get_image(self):
+        return load_image('puzzles', 'tic_tac_toe.png', color_key='white')
 
     def _get_set(self, level):
         while True:

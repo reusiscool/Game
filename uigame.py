@@ -62,6 +62,14 @@ class UIGame:
         elif self.slot2.collidepoint(mx, my):
             s = generate_description('large_font', self.player.weapon_list[1].stats.__dict__, 'Weapon')
             surf.blit(s, (surf.get_width() - s.get_width(), 0))
+        elif self.hp.collidepoint(mx, my):
+            s = generate_description('large_font', [f"{self.player.stats.health} :"
+                                                    f" {self.player.stats.max_health}"], "Health")
+            surf.blit(s, (surf.get_width() - s.get_width(), 0))
+        elif self.mana.collidepoint(mx, my):
+            s = generate_description('large_font', [f"{self.player.stats.mana} :"
+                                                    f" {self.player.stats.max_mana}"], "Mana")
+            surf.blit(s, (surf.get_width() - s.get_width(), 0))
 
     def render(self, surf: pygame.Surface, mouse_pos):
         pygame.draw.rect(surf, 'black', self.bg)

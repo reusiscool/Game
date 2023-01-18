@@ -1,7 +1,7 @@
 import pygame
 from abc import ABC, abstractmethod
 
-from mixer import single_mixer
+from mixer import Mixer
 from utils.converters import mum_convert
 from player import Player
 
@@ -32,7 +32,7 @@ class BaseLoot(ABC):
         for obj in board.get_objects(self.pos, self.hitbox_size * 3):
             if self.rect.colliderect(obj.rect) and isinstance(obj, Player):
                 board.pop_loot(self)
-                single_mixer().on_pick()
+                Mixer().on_pick()
                 self.add_amount(obj, board)
 
     def render(self, surf, camera_x, camera_y):

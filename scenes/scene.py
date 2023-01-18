@@ -8,3 +8,5 @@ class Scene(Enum):
     NewGame = 4
     Pause = 5
     SettingScene = 6
+    DeathScreen = 7
+    WinScreen = 8

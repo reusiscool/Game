@@ -4,7 +4,7 @@ import os
 
 from scenes.scene import Scene
 from utils.customFont import single_font
-from mixer import single_mixer
+from mixer import Mixer
 
 
 class SettingScene:
@@ -16,12 +16,15 @@ class SettingScene:
         self.is_fullscreen = False
         self.possible_res = [(1920, 1080), (1600, 900), (1440, 1080), (1280, 960), (1024, 768), (800, 600), (960, 720)]
         self.volume = 0
+        self.music_volume = 0
         self.resolution = (0, 0)
         self._read()
         self.drop_buttons = []
         self.drop_buttons_txt = []
         self.eval_size()
         self.resize_screen()
+        Mixer().change_volume(self.volume)
+        Mixer().set_music_volume(self.music_volume)
 
     def resize_screen(self):
         if self.is_fullscreen:
@@ -35,12 +38,15 @@ class SettingScene:
         sw, sh = self.W // 16, self.H // 50
         self.check_box = pygame.Rect(self.W // 2 - bw, self.H // 2 - 7 * bh, bw * 2, bh * 2)
         self.slider = pygame.Rect(self.W // 2 - sw, self.H // 2 - sh, sw + bw, 2 * sh)
+        self.music_slider = pygame.Rect(self.W // 2 - sw, self.H // 2 + 2 * bh, sw + bw, 2 * sh)
         self.dropdown = pygame.Rect(self.W // 2 - bw, self.H // 2 - 4 * bh, bw * 2, bh * 2)
-        self.return_btn = pygame.Rect(self.W // 2 - bw, self.H // 2 + 2 * bh, bw * 2, bh * 2)
+        self.return_btn = pygame.Rect(self.W // 2 - bw, self.H // 2 + 5 * bh, bw * 2, bh * 2)
         self.return_txt = self.scale(self.font.render('Return'), self.return_btn.size)
         self.return_txt.set_colorkey('black')
         self.volume_txt = self.scale(self.font.render('Volume'), self.return_btn.size)
         self.volume_txt.set_colorkey('black')
+        self.music_volume_txt = self.scale(self.font.render('Music'), self.return_btn.size)
+        self.music_volume_txt.set_colorkey('black')
         self.dropdown_txt = self.scale(self.font.render(f'{self.resolution[0]}:{self.resolution[1]}'),
                                        self.dropdown.size)
         self.dropdown_txt.set_colorkey('black')
@@ -66,6 +72,7 @@ class SettingScene:
             self.volume = float(next(reader)[0])
             self.resolution = eval(next(reader)[0])
             self.is_fullscreen = bool(int(next(reader)[0]))
+            self.music_volume = float(next(reader)[0])
 
     def scale(self, surf, to_size):
         sx, sy = to_size
@@ -77,7 +84,8 @@ class SettingScene:
 
     def render(self):
         self._render_btn(self.return_btn, self.return_txt)
-        self._render_slider()
+        self._render_slider(self.slider, self.volume_txt, self.volume)
+        self._render_slider(self.music_slider, self.music_volume_txt, self.music_volume)
         self._render_dropdown()
         if self.is_fullscreen:
             self._render_btn(self.check_box, self.check_txt, 'green')
@@ -93,14 +101,14 @@ class SettingScene:
                     self._render_btn(btn, self.drop_buttons_txt[ind], 'grey')
         self._render_btn(self.dropdown, self.dropdown_txt)
 
-    def _render_slider(self):
-        pygame.draw.rect(self.screen, 'grey', self.slider)
-        r = pygame.Rect(0, 0, *self.volume_txt.get_size())
-        r.right = self.slider.left - 5
-        r.centery = self.slider.centery
-        self.screen.blit(self.volume_txt, r)
-        w = self.slider.w * self.volume
-        r = pygame.Rect(self.slider.x, self.slider.y, w, self.slider.h)
+    def _render_slider(self, slide, txt, volume):
+        pygame.draw.rect(self.screen, 'grey', slide)
+        r = pygame.Rect(0, 0, *txt.get_size())
+        r.right = slide.left - 5
+        r.centery = slide.centery
+        self.screen.blit(txt, r)
+        w = slide.w * volume
+        r = pygame.Rect(slide.x, slide.y, w, slide.h)
         pygame.draw.rect(self.screen, 'green', r)
 
     def _render_btn(self, btn, txt, color='white'):
@@ -115,7 +123,14 @@ class SettingScene:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return Scene.Exit
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    self.save()
+                    Mixer().change_volume(self.volume)
+                    Mixer().set_music_volume(self.music_volume)
+                    self.resize_screen()
+                    return Scene.Pause
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
+                    Mixer().on_click()
                     if self.dropped:
                         self.dropped = False
                         for i, btn in enumerate(self.drop_buttons):
@@ -128,13 +143,19 @@ class SettingScene:
                         continue
                     if self.return_btn.collidepoint(*event.pos):
                         self.save()
-                        single_mixer().change_volume(self.volume)
+                        Mixer().change_volume(self.volume)
+                        Mixer().set_music_volume(self.music_volume)
                         self.resize_screen()
                         return Scene.Pause
                     if self.slider.collidepoint(*event.pos):
                         x, y = event.pos
                         dx = x - self.slider.x
                         self.volume = dx / self.slider.w
+                        continue
+                    if self.music_slider.collidepoint(*event.pos):
+                        x, y = event.pos
+                        dx = x - self.music_slider.x
+                        self.music_volume = dx / self.music_slider.w
                         continue
                     if self.dropdown.collidepoint(*event.pos):
                         self.dropped = True
@@ -151,3 +172,4 @@ class SettingScene:
             writer.writerow((self.volume,))
             writer.writerow((self.resolution,))
             writer.writerow((int(self.is_fullscreen),))
+            writer.writerow((self.music_volume,))

@@ -19,11 +19,13 @@ class PuzzleResult(Enum):
 class BasePuzzle(BaseInteractable, ABC):
     def __init__(self, pos, id_, reward: list[BaseLoot] = None):
         self.reward = [] if reward is None else reward
-        surf = pygame.Surface((50, 50))
-        surf.fill('pink')
-        super().__init__(pos, [surf])
+        super().__init__(pos, [self.get_image()])
         self.id = id_
         self.hitbox_size = 50
+
+    @abstractmethod
+    def get_image(self):
+        pass
 
     @abstractmethod
     def run(self) -> PuzzleResult:

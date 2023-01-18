@@ -7,6 +7,7 @@ import pygame
 from loot.baseLoot import BaseLoot
 from puzzles.basePuzzle import BasePuzzle, PuzzleResult
 from utils.infoDisplay import generate_description
+from utils.utils import load_image
 
 names = ['Bob', 'Top', 'Rob']
 
@@ -47,6 +48,9 @@ class LiarPuzzle(BasePuzzle):
             rct = pygame.Rect(w // 2 - dx * (2.5 - i * 2), h * 3 // 5, dx, dx)
             self.buttons.append(Button(i, rct, info))
         self.correct = int(ls[3])
+
+    def get_image(self):
+        return load_image('puzzles', 'liar.png', color_key='white')
 
     def run(self) -> PuzzleResult:
         screen = pygame.display.get_surface()

@@ -15,7 +15,7 @@ class Particle:
     def get_surf(self):
         r = self.radius * 2
         surf = pygame.Surface((r * 2, r * 2))
-        pygame.draw.circle(surf, (30, 30, 50), (r, r), r)
+        pygame.draw.circle(surf, (150, 60, 60), (r, r), r)
         surf.set_colorkey('black')
         return surf
 
@@ -23,10 +23,10 @@ class Particle:
         if self.radius <= 0:
             return False
         x, y = mum_convert(self.x, self.y)
-        s = self.get_surf()
-        pygame.draw.circle(screen, 'white', (x - camera_x, y - camera_y), self.radius)
-        screen.blit(s, (x - camera_x - self.radius * 2, y - camera_y - self.radius * 2),
-                    special_flags=pygame.BLEND_RGB_ADD)
+        # s = self.get_surf()
+        pygame.draw.circle(screen, 'red', (x - camera_x, y - camera_y), self.radius)
+        # screen.blit(s, (x - camera_x - self.radius * 2, y - camera_y - self.radius * 2),
+        #             special_flags=pygame.BLEND_RGB_ADD)
         self.sp_y += self.g
         self.sp_x += self.g
         self.radius -= self.g

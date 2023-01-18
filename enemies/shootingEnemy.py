@@ -1,7 +1,7 @@
 from math import dist
 
 from enemies.baseEnemy import BaseEnemy, EnemyStats
-from mixer import single_mixer
+from mixer import Mixer
 from utils.savingConst import SavingConstants
 from utils.utils import load_image
 from weapons.baseProjectile import BaseProjectile
@@ -9,17 +9,13 @@ from utils.move import Move
 
 
 class ShootingEnemy(BaseEnemy):
-    def __init__(self, es: EnemyStats):
-        image_list = [load_image('grass.jpg')]
-        super().__init__(image_list, es)
-
     def attack(self, board):
         self.cur_attack_time += 1
         if self.cur_attack_time >= self.stats.attack_time:
             vecx, vecy = board.player.x - self.x, board.player.y - self.y
             dist_to_player = dist(self.pos, board.player.pos)
             if dist_to_player <= self.stats.attack_distance:
-                single_mixer().on_ability()
+                Mixer().on_ability()
                 image_list = [load_image('enemy_ability',
                                          f'enemy_ability{i}.png',
                                          color_key='white')

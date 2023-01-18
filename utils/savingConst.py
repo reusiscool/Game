@@ -1,3 +1,6 @@
+from utils.singleton import Singleton
+
+
 def _damage_scale(start_damage, lvl):
     return start_damage + start_damage * lvl // 12
 
@@ -31,7 +34,7 @@ def dash_enemy_health(lvl):
 
 
 def shooting_enemy_attack_time(lvl):
-    return 12 - lvl // 2
+    return 20 - lvl // 2
 
 
 def dash_enemy_attack_time(lvl):
@@ -83,14 +86,7 @@ def manaitem_cost(lvl):
     return 5 + lvl * 2
 
 
-class SavingConstants:
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(SavingConstants, cls).__new__(cls)
-        return cls._instance
-
+class SavingConstants(metaclass=Singleton):
     def __init__(self):
         from enemies.dashEnemy import DashEnemy
         from enemies.shootingEnemy import ShootingEnemy

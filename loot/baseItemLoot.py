@@ -3,7 +3,7 @@ from abc import ABC
 import pygame
 
 from loot.baseLoot import BaseLoot
-from mixer import single_mixer
+from mixer import Mixer
 from player import Player
 
 
@@ -24,7 +24,7 @@ class BaseItemLoot(BaseLoot, ABC):
                     return
                 if not obj.inventory.add_item(self.item):
                     self.time = 30
-                    single_mixer().on_fail()
+                    Mixer().on_fail()
                     return
                 board.pop_loot(self)
-                single_mixer().on_pick()
+                Mixer().on_pick()

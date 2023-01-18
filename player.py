@@ -78,7 +78,8 @@ class Player(Entity):
     def update(self, board):
         super().update(board)
         self.dash_current_cooldown = max(0, self.dash_current_cooldown - 1)
-        self.weapon_list[self.weapon_index].update()
+        self.weapon_list[0].update()
+        self.weapon_list[1].update()
         self.ability.update()
         if self.try_attack:
             self.weapon_list[self.weapon_index].attack(board, self)

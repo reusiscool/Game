@@ -2,13 +2,11 @@ from enemies.baseEnemy import BaseEnemy, EnemyStats
 from player import Player
 from utils.move import Move
 from utils.savingConst import SavingConstants
-from utils.utils import load_image
 
 
 class DashEnemy(BaseEnemy):
     def __init__(self, es: EnemyStats):
-        image_list = [load_image('grass.jpg')]
-        super().__init__(image_list, es)
+        super().__init__(es)
         self.leap_time = 15
         self.token_time = 0
 

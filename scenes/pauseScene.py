@@ -1,5 +1,6 @@
 import pygame
 
+from mixer import Mixer
 from scenes.scene import Scene
 from utils.customFont import single_font
 
@@ -48,7 +49,10 @@ class PauseScene:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return Scene.Exit
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    return Scene.GameScene
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
+                    Mixer().on_click()
                     if self.continue_button.collidepoint(*event.pos):
                         return Scene.GameScene
                     if self.quit_button.collidepoint(*event.pos):

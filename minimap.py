@@ -119,6 +119,7 @@ class Minimap:
         surf.blit(s, ((surf.get_width() - s.get_width()) // 2,
                       (surf.get_height() - s.get_height()) // 2))
         desc = self.get_desc()
+        pygame.draw.circle(surf, 'yellow', (surf.get_width() // 2, surf.get_height() // 2), 3)
         surf.blit(desc, (surf.get_width() - desc.get_width(), 0))
 
     def save(self):

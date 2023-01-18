@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Tuple
-import pygame
 
 from enemies.lootTable import EnemyLootTable
 from loot.moneyLoot import MoneyLoot
-from mixer import single_mixer
+from mixer import Mixer
 from entity import Entity, EntityStats, Team
 from utils.savingConst import SavingConstants
+from utils.utils import load_image
 
 
 @dataclass(slots=True)
@@ -20,7 +20,8 @@ class EnemyStats(EntityStats):
 
 
 class BaseEnemy(Entity, ABC):
-    def __init__(self, image_list: list[pygame.Surface], es: EnemyStats):
+    def __init__(self, es: EnemyStats):
+        image_list = [load_image('enemies', 'enemy.png', color_key='white')]
         super().__init__(image_list, es)
         self.stats = es
         self.player_pos = None
@@ -43,7 +44,7 @@ class BaseEnemy(Entity, ABC):
         if self.stats.health > 0:
             board.add_enemy(self)
             return
-        single_mixer().on_death()
+        Mixer.on_death()
         if self.loot_table:
             for _ in range(self.drop_amount):
                 type_ = self.loot_table.roll()
