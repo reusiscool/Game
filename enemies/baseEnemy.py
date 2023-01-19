@@ -44,7 +44,7 @@ class BaseEnemy(Entity, ABC):
         if self.stats.health > 0:
             board.add_enemy(self)
             return
-        Mixer.on_death()
+        Mixer().on_death()
         if self.loot_table:
             for _ in range(self.drop_amount):
                 type_ = self.loot_table.roll()
