@@ -36,3 +36,9 @@ class Portal(BaseInteractable):
     def serialize(self):
         return SavingConstants().get_const(type(self)), tuple(self.locks),\
                (int(self.x), int(self.y))
+
+    @classmethod
+    def read(cls, line):
+        locks = list(eval(line[1]))
+        pos = eval(line[2])
+        return cls(pos, locks)

@@ -51,6 +51,16 @@ class EntityGen:
                 ts = TrapStats(dmg, cd, pygame.Rect(dx, dy, self.tile_size, self.tile_size), up_cd)
                 self.noncolliders.append(Trap(ts))
 
+    def _gen_puzzle(self, room):
+        puzzle = choice((TicTacToePuzzle, LiarPuzzle))
+        pos = room.pos_to_tiles(self.tile_size)
+        reward = []
+        for _ in range(3):
+            if randint(0, 1):
+                reward.append(MoneyLoot(pos, self.constants.gold_drop[self.level_number - 1]))
+        reward.append(KeyItemLoot(pos, room.id_))
+        self.noncolliders.append(puzzle(pos, reward))
+
     def _rarity_roll(self):
         roll = randint(1, 100)
         if roll > 95:
@@ -75,13 +85,7 @@ class EntityGen:
             elif room.type_ == RoomType.Combat:
                 self._gen_enemies(room)
             elif room.type_ == RoomType.Puzzle:
-                puzzle = choice((TicTacToePuzzle, LiarPuzzle))
-                pos = room.pos_to_tiles(self.tile_size)
-                reward = []
-                for _ in range(3):
-                    if randint(0, 1):
-                        reward.append(MoneyLoot(pos, self.constants.gold_drop[self.level_number - 1]))
-                self.noncolliders.append(puzzle(pos, room.id_, reward))
+                self._gen_puzzle(room)
             elif room.type_ == RoomType.Weapon:
                 self.noncolliders.append(WeaponLoot(room.pos_to_tiles(self.tile_size),
                                                     Sword.generate(self._rarity_roll(),
@@ -116,10 +120,8 @@ class EntityGen:
                 if not line:
                     continue
                 type_ = instance.constants.get_type(int(line[0]))
-                if type_ in (Trap, BasePuzzle):
-                    instance.noncolliders.append(type_.read(line, number))
-                elif type_ in (DashEnemy, ShootingEnemy):
-                    instance.enemies.append(type_.read(line, number))
+                if type_ in (DashEnemy, ShootingEnemy):
+                    instance.enemies.append(type_.read(line))
                 else:
                     ent = instance.constants.load(line)
                     instance.noncolliders.append(ent)

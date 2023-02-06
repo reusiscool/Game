@@ -38,3 +38,9 @@ class DarkShop(BaseShop):
     def serialize(self):
         ls = super().serialize()
         return *ls[:3], tuple(self.locks), *ls[3:]
+
+    @classmethod
+    def read(cls, line):
+        locks = list(eval(line.pop(3)))
+        pos, rarity, goods = BaseShop._shop_info(line)
+        return cls(pos, rarity, locks, goods=goods)

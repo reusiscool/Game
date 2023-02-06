@@ -18,3 +18,8 @@ class Shop(BaseShop):
 
     def get_desc(self):
         return generate_description('large_font', {'Rarity': self.rarity}, 'Shop')
+
+    @classmethod
+    def read(cls, line):
+        pos, rarity, goods = BaseShop._shop_info(line)
+        return cls(pos, rarity, goods=goods)

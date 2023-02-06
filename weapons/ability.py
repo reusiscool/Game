@@ -51,3 +51,11 @@ class Ability(BaseAbility):
         stats[0] = max(100 - stats[0], 0)
         stats[1] = max(0, 100 - stats[1])
         return cls(AbilityStats(*stats))
+
+    @classmethod
+    def read(cls, line):
+        cd = int(line[1])
+        cost = int(line[2])
+        dmg = int(line[3])
+        stats = AbilityStats(cd, cost, dmg)
+        return cls(stats)

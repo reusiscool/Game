@@ -18,6 +18,10 @@ class EnemyStats(EntityStats):
     damage: int
     min_distance: int = 0
 
+    def stats_tuple(self):
+        return self.detect_range, self.attack_distance, self.attack_time,\
+               self.damage, self.min_distance
+
 
 class BaseEnemy(Entity, ABC):
     def __init__(self, es: EnemyStats):
@@ -68,9 +72,18 @@ class BaseEnemy(Entity, ABC):
     def attack(self, *args, **kwargs):
         pass
 
-    def serialize(self) -> Tuple[int, tuple[int, int], int]:
+    def serialize(self):
         return SavingConstants().get_const(type(self)),\
-               (int(self.x), int(self.y)), self.stats.health
+               (int(self.x), int(self.y)), self.stats.health, self.stats.speed, self.stats.stats_tuple()
+
+    @classmethod
+    def read(cls, line):
+        pos = eval(line[1])
+        cur_hp = int(line[2])
+        speed = float(line[3])
+        stats = eval(line[4])
+        es = EnemyStats((*pos, 10), speed, cur_hp, cur_hp, *stats)
+        return cls(es)
 
     @property
     @abstractmethod

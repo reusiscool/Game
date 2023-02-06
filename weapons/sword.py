@@ -5,6 +5,7 @@ from random import randint
 import pygame
 
 from mixer import Mixer
+from utils.infoDisplay import generate_description
 from utils.savingConst import SavingConstants
 from weapons.baseWeapon import BaseWeapon
 from utils.converters import mum_convert
@@ -28,6 +29,19 @@ class Sword(BaseWeapon):
         self.stats = sword_stats
         self.image_list = self.image_list * self.stats.cooldown
         self.cosa = cos(radians(sword_stats.angle))
+        self._desc = None
+
+    @property
+    def desc(self):
+        if self._desc is None:
+            self._desc = generate_description('large_font', self.stats.__dict__, 'Sword')
+        return self._desc
+
+    def kill_drop(self, board, owner):
+        pass
+
+    def hit_drop(self, board, owner):
+        pass
 
     def attack(self, board, owner):
         if self.current_cooldown:
@@ -42,6 +56,9 @@ class Sword(BaseWeapon):
                     vector_angle((obj.x - owner.x, obj.y - owner.y),
                                  owner.looking_direction) >= self.cosa:
                 obj.damage(self.stats.damage)
+                self.hit_drop(board, owner)
+                if obj.stats.health <= 0:
+                    self.kill_drop(board, owner)
                 m1 = Move(obj.x - sx, obj.y - sy, 7, normalize=True)
                 m1.amplify(self.stats.knockback // 7)
                 obj.move_move(Move(obj.x - sx, obj.y - sy, 10, own_speed=True, normalize=True))
@@ -87,7 +104,7 @@ class Sword(BaseWeapon):
             pygame.draw.line(surf, 'orange', (px - cx, py - cy), (nx - cx, ny - cy), 5)
 
     def serialize(self):
-        return SavingConstants().get_const(Sword), self.stats.damage, self.stats.range_,\
+        return SavingConstants().get_const(type(self)), self.stats.damage, self.stats.range_,\
                self.stats.angle, self.stats.cooldown, self.stats.knockback
 
     @classmethod
@@ -111,3 +128,12 @@ class Sword(BaseWeapon):
         stats = [raw_stats[i] * stat_score[i] // 100 + min_stats[i] for i in range(5)]
         stats[3] = 100 - stats[3]
         return cls(SwordStats(*stats))
+
+    @staticmethod
+    def get_stats_type():
+        return SwordStats
+
+    @classmethod
+    def read(cls, line):
+        sws = cls.get_stats_type()(*tuple(int(i) for i in line[1:]))
+        return cls(sws)

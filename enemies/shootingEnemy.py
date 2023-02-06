@@ -21,7 +21,7 @@ class ShootingEnemy(BaseEnemy):
                                          color_key='white')
                               for i in range(6)]
                 vec = Move(vecx, vecy, normalize=True)
-                vec.amplify(10)
+                vec.amplify(7)
                 b = BaseProjectile(self.pos, 10, image_list + image_list[::-1],
                                    420, self, vec.vector, self.stats.damage)
                 board.add_projectile(b)
@@ -34,12 +34,3 @@ class ShootingEnemy(BaseEnemy):
     @property
     def drop_amount(self):
         return 2
-
-    @classmethod
-    def read(cls, line, level):
-        pos = eval(line[1])
-        cur_hp = int(line[2])
-        speed, *stats = SavingConstants().get_stats(ShootingEnemy, level)
-        es = EnemyStats((*pos, 10),
-                        speed, cur_hp, *stats)
-        return ShootingEnemy(es)

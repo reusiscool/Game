@@ -1,6 +1,5 @@
 from interactables.baseInteractable import BaseInteractable
 from weapons.baseWeapon import BaseWeapon
-from utils.infoDisplay import generate_description
 from utils.savingConst import SavingConstants
 
 
@@ -16,8 +15,15 @@ class WeaponLoot(BaseInteractable):
         obj.weapon_list[obj.weapon_index] = self.weapon
 
     def get_desc(self):
-        return generate_description('large_font', self.weapon.stats.__dict__, 'Weapon')
+        return self.weapon.desc
 
     def serialize(self):
         return SavingConstants().get_const(type(self)),\
                tuple(int(i) for i in self.pos), *self.weapon.serialize()
+
+    @classmethod
+    def read(cls, line):
+        pos = eval(line[1])
+        type_const = int(line[2])
+        type_ = SavingConstants().get_type(type_const)
+        return cls(pos, type_.read(line[2:]))

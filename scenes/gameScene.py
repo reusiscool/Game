@@ -1,11 +1,11 @@
+from random import randint
+import pygame
 import csv
 import os
-from random import randint
-
-import pygame
 
 from entity import Entity
 from mixer import Mixer
+from scenes.skillScene import SkillScene
 from surroundings.particles import Particle
 from surroundings.rooms import RoomType
 from utils.converters import mum_convert, back_convert
@@ -21,11 +21,12 @@ from utils.savingConst import SavingConstants
 from utils.utils import normalize
 from scenes.scene import Scene
 from weapons.ability import Ability, AbilityStats
+from weapons.dropSwords import ManaSwordStats, ManaSword
 from weapons.sword import SwordStats, Sword
 
 
 class GameScene:
-    def __init__(self, screen: pygame.Surface):
+    def __init__(self, screen: pygame.Surface, gen_new):
         pygame.init()
         self.FPS = 60
         self.font = pygame.font.SysFont("Arial", 18, bold=True)
@@ -34,13 +35,16 @@ class GameScene:
         self.display = pygame.Surface((self.W // 2, self.H // 2))
         self.clock = pygame.time.Clock()
         self.camera = Camera([0, 0])
-        is_new_session = self._gen_new()
         self.particles = []
-        self.player = self._gen_player() if is_new_session else self._load_player()
+        self.player = self._gen_player() if gen_new else self._load_player()
+        self.skill_scene = SkillScene(self.screen, self.player)
+        if not gen_new:
+            self.skill_scene.read()
+            self.player.skills = self.skill_scene.get_skills(True)
         self.board: Board = Board(100, self.player, 700,
-                                  self.display.get_width() * 3 // 5, is_new_session)
+                                  self.display.get_width() * 3 // 5, gen_new)
         self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
-        self.minimap: Minimap = Minimap(self.board, read=not is_new_session)
+        self.minimap: Minimap = Minimap(self.board, read=not gen_new)
         x, y = self.player.pos
         x1, y1 = mum_convert(x, y)
         self.camera.snap((x1, y1), self.display.get_size())
@@ -54,20 +58,15 @@ class GameScene:
         self.gameui: UIGame = UIGame(self.player, (self.W // 2, self.H // 2))
         self.player.inventory.resize(self.display.get_size())
 
-    def _gen_new(self):
-        with open(os.path.join('save_files', 'GameState.txt')) as f:
-            k = int(f.readline())
-        return k == 0
-
     def _gen_player(self):
-        ps = PlayerStats((0, 0, 5), 4, 100, 100, 100, 100, 30, 3, 0, 4, [])
+        ps = PlayerStats((0, 0, 5), 4, 100, 100, 100, 100, 30, 3, 0, 1)
         invent = Inventory(7, self.display.get_size())
         hl = HealItem(20)
         invent.add_item(hl)
-        sw_st1 = SwordStats(25, 45, 40, 40, 30)
+        sw_st1 = ManaSwordStats(25, 45, 40, 40, 30, 10)
         sw_st2 = SwordStats(10, 100, 45, 60, 60)
         ast = AbilityStats(20, 20, 10)
-        return Player(ps, invent, [Sword(sw_st1), Sword(sw_st2)], Ability(ast))
+        return Player(ps, invent, [ManaSword(sw_st1), Sword(sw_st2)], Ability(ast))
 
     def _load_player(self):
         with open(os.path.join('save_files', 'player.csv')) as f:
@@ -81,11 +80,8 @@ class GameScene:
                 items.append(item)
         abl = SavingConstants().load(ast)
         pos = eval(stat_line[0])
-        rooms = []
-        for r in eval(stat_line[-1]):
-            rooms.append(RoomType(r))
-        stats = [int(i) for i in stat_line[1:-1]]
-        stats = PlayerStats((*pos, 10), *stats, rooms)
+        stats = [int(i) for i in stat_line[1:]]
+        stats = PlayerStats((*pos, 10), *stats)
         weapons1 = [SavingConstants().load(w1), SavingConstants().load(w2)]
         invent = Inventory(7, self.display.get_size())
         for i in items:
@@ -171,6 +167,16 @@ class GameScene:
             if not self.particles[i].render(self.display, *self.camera.pos):
                 self.particles.pop(i)
 
+    def on_click(self, event):
+        if pygame.key.get_pressed()[pygame.K_TAB]:
+            self.player.inventory.use_item(pygame.mouse.get_pos(), self.player)
+            return
+        if self.gameui.on_click(event.pos):
+            self.skill_scene.run()
+            self.player.skills = self.skill_scene.get_skills(True)
+            return
+        self.player.attack()
+
     def run(self):
         self.on_rescale()
         while True:
@@ -180,10 +186,7 @@ class GameScene:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     return Scene.Pause
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
-                    if pygame.key.get_pressed()[pygame.K_TAB]:
-                        self.player.inventory.use_item(pygame.mouse.get_pos(), self.player)
-                    else:
-                        self.player.attack()
+                    self.on_click(event)
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT:
                     if pygame.key.get_pressed()[pygame.K_TAB]:
                         self.player.inventory.discard_item(pygame.mouse.get_pos())
@@ -278,4 +281,5 @@ class GameScene:
 
     def save(self):
         self.board.save()
+        self.skill_scene.save()
         self.minimap.save()

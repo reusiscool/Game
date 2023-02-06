@@ -20,3 +20,8 @@ class MapDistLoot(BaseLoot):
 
     def serialize(self):
         return SavingConstants().get_const(MapDistLoot), self.pos
+
+    @classmethod
+    def read(cls, line):
+        pos = eval(line[1])
+        return cls(pos)

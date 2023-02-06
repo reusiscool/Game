@@ -1,8 +1,5 @@
 from enum import Enum
 from abc import ABC, abstractmethod
-from random import randint, choice
-
-import pygame
 
 from interactables.baseInteractable import BaseInteractable
 from loot.baseLoot import BaseLoot
@@ -17,10 +14,9 @@ class PuzzleResult(Enum):
 
 
 class BasePuzzle(BaseInteractable, ABC):
-    def __init__(self, pos, id_, reward: list[BaseLoot] = None):
+    def __init__(self, pos, reward: list[BaseLoot] = None):
         self.reward = [] if reward is None else reward
         super().__init__(pos, [self.get_image()])
-        self.id = id_
         self.hitbox_size = 50
 
     @abstractmethod
@@ -36,27 +32,28 @@ class BasePuzzle(BaseInteractable, ABC):
         if res != PuzzleResult.Quit:
             board.pop_loot(self)
         if res == PuzzleResult.Won:
-            if self.id:
-                board.add_noncollider(KeyItemLoot(self.pos, self.id))
             for lt in self.reward:
                 board.add_noncollider(lt)
 
     def serialize(self):
-        return SavingConstants().get_const(BasePuzzle), tuple(int(i) for i in self.pos), self.id
+        ls = []
+        for i in self.reward:
+            for j in i.serialize():
+                ls.append(j)
+            ls.append('/n')
+        return SavingConstants().get_const(type(self)), tuple(int(i) for i in self.pos), *ls
 
     @classmethod
-    def read(cls, line, level):
-        from puzzles.ticPuzzle import TicTacToePuzzle
-        from puzzles.liarPuzzle import LiarPuzzle
-        from loot.moneyLoot import MoneyLoot
-        if len(line) == 3:
-            id_ = int(line[2])
-        else:
-            id_ = None
+    def read(cls, line):
         pos = eval(line[1])
-        puzzle = choice((TicTacToePuzzle, LiarPuzzle))
+        type_ = SavingConstants().get_type(int(line[0]))
         reward = []
-        for _ in range(3):
-            if randint(0, 1):
-                reward.append(MoneyLoot(pos, SavingConstants().gold_drop[level - 1]))
-        return puzzle(pos, id_, reward=reward)
+        r = 2
+        l = 2
+        while r < len(line):
+            if line[r] == '/n':
+                item = SavingConstants().load(line[l:r])
+                reward.append(item)
+                l = r + 1
+            r += 1
+        return type_(pos, reward=reward)

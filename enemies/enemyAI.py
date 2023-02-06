@@ -20,6 +20,8 @@ def has_clear_sight(board, entity1: Entity, entity2: Entity = None) -> bool:
     for obj in board.get_objects((cx, cy), d):
         if obj in (entity1, entity2):
             continue
+        if vector_len((cx - obj.x, cy - obj.y)) >= d:
+            continue
         if collides(p1, p2, *map(int, (*obj.rect.topleft, *obj.rect.size))):
             return False
     return True

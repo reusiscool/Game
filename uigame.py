@@ -20,6 +20,7 @@ class UIGame:
         a = self.win_h - 2 * self.gap - self.y
         self.slot1 = pygame.Rect(self.win_w // 2, self.y + self.gap, a, a)
         self.slot2 = pygame.Rect(self.slot1.right + 2 * self.gap, self.y + self.gap, a, a)
+        self.skill_btn = pygame.Rect(self.slot2.right + self.gap, self.y + self.gap + a // 4, a * 2, a // 2)
 
     def _get_level(self):
         with open(os.path.join('save_files', 'GameState.txt')) as f:
@@ -39,6 +40,12 @@ class UIGame:
                         self.player.stats.mana * self.mana.width / self.player.stats.max_mana,
                         self.mana.height)
         pygame.draw.rect(surf, 'blue', r)
+
+    def on_click(self, mouse_pos):
+        x, y = mouse_pos
+        x >>= 1
+        y >>= 1
+        return self.skill_btn.collidepoint((x, y))
 
     def _render_weapons(self, surf):
         if self.player.weapon_index:
@@ -85,3 +92,8 @@ class UIGame:
         font = single_font('large_font')
         srf = font.render(f'Gold - {self.player.stats.gold}')
         surf.blit(srf, (surf.get_width() - srf.get_width() - 5, self.y + font.height + 10))
+
+        pygame.draw.rect(surf, 'white', self.skill_btn)
+        txt = font.render('Skills')
+        txt.set_colorkey('black')
+        surf.blit(txt, (self.skill_btn.centerx - txt.get_width() // 2, self.skill_btn.centery - txt.get_height() // 2 + 3))

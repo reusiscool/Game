@@ -12,3 +12,9 @@ class KeyItemLoot(BaseItemLoot):
     def serialize(self):
         return SavingConstants().get_const(type(self)),\
                (int(self.x), int(self.y)), self.item.lock_id
+
+    @classmethod
+    def read(cls, line):
+        pos = eval(line[1])
+        id_ = eval(line[2])
+        return cls(pos, id_)

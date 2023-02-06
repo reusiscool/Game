@@ -13,6 +13,11 @@ class BaseWeapon(ABC):
         self.image_index = 0
         self.current_cooldown = 0
 
+    @property
+    @abstractmethod
+    def desc(self):
+        pass
+
     @abstractmethod
     def attack(self, board, owner):
         pass

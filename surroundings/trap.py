@@ -57,11 +57,13 @@ class Trap:
         surf.blit(img, (x - camera_x - img.get_width() // 2, y - camera_y))
 
     def serialize(self):
-        return SavingConstants().get_const(type(self)), (int(self.ts.rect.x), int(self.ts.rect.y))
+        return SavingConstants().get_const(type(self)), (int(self.ts.rect.x), int(self.ts.rect.y)), self.ts.damage, self.ts.cooldown, self.ts.time_up
 
     @classmethod
-    def read(cls, line, level):
+    def read(cls, line):
         pos = eval(line[1])
-        dmg, cd, up_cd = SavingConstants().get_stats(Trap, level)
+        dmg = int(line[2])
+        cd = int(line[3])
+        up_cd = int(line[4])
         ts = TrapStats(dmg, cd, pygame.Rect(*pos, 100, 100), up_cd)
         return Trap(ts)

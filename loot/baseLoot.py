@@ -43,3 +43,10 @@ class BaseLoot(ABC):
         off_x = img.get_width() // 2
         off_y = img.get_height()
         surf.blit(img, (x - camera_x - off_x, y - camera_y - off_y + self.hitbox_size // 2))
+
+    @classmethod
+    def read(cls, line):
+        pos = eval(line[1])
+        amount = int(line[2])
+        return cls(pos, amount)
+

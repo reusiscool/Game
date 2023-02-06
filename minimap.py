@@ -11,7 +11,7 @@ class Minimap:
         self.rooms = board.reader.level.room_list
         self.map_ = board.reader.map_
         self.colors = ['green', 'white', 'yellow', 'grey', 'black', 'purple',
-                  'blue', 'purple', 'white', 'red']
+                       'blue', 'purple', 'white', 'red']
         self.size = len(self.map_)
         self.ts = 10
         self.textures = self.get_pics()
@@ -19,9 +19,9 @@ class Minimap:
         self.gap = self.ts * 15
         self.surf = pygame.Surface((self.size * self.ts + self.gap * 2,
                                     self.size * self.ts + self.gap * 2), pygame.SRCALPHA)
-        self.revealed_rooms: list[RoomType] = board.player.stats.revealed_rooms
+        self.revealed_rooms: list[RoomType] = board.player.revealed_rooms
         self.revealed_map = self._read() if read else [[False] * len(self.map_) for _ in range(len(self.map_))]
-        self.reveal_dist: int = None
+        self.reveal_dist: int = board.player.reveal_distance
         self.max_reveal_distance = 7
 
     def _draw_empty(self, x, y):
@@ -73,8 +73,8 @@ class Minimap:
 
     def update(self, board):
         x, y = board.player.tile_pos(board.tile_size)
-        d = self.reveal_dist = min(self.max_reveal_distance, board.player.stats.reveal_distance)
-        self.revealed_rooms = board.player.stats.revealed_rooms
+        d = self.reveal_dist = min(self.max_reveal_distance, board.player.reveal_distance)
+        self.revealed_rooms = board.player.revealed_rooms
 
         for y1 in range(max(y - d, 0), min(y + d, self.size)):
             for x1 in range(max(x - d, 0), min(x + d, self.size)):

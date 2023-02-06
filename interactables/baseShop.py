@@ -51,6 +51,7 @@ class BaseShop(BaseInteractable, ABC):
         self.buttons.clear()
         for i, good in enumerate(self.goods):
             if good is None:
+                self.buttons.append(None)
                 continue
             item, price = good
             r = pygame.Rect(w // 2 - w // 10 + (i - 1) * 3 * w // 10,
@@ -106,3 +107,27 @@ class BaseShop(BaseInteractable, ABC):
             ls.append([*item1, price1])
         return SavingConstants().get_const(type(self)), self.pos, self.rarity, \
             *ls[0], '/n', *ls[1], '/n', *ls[2]
+
+    @staticmethod
+    def _shop_info(line):
+        pos = eval(line[1])
+        rarity = int(line[2])
+        k = 3
+        goods = []
+        for _ in range(3):
+            ls = []
+            while True:
+                if k == len(line) or line[k] == '/n':
+                    k += 1
+                    break
+                ls.append(line[k])
+                k += 1
+            if len(ls) <= 1:
+                goods.append(None)
+                continue
+            *line1, cost = ls
+            cost = int(cost)
+            item_type_ = SavingConstants().get_type(int(line1[0]))
+            item = item_type_.read(line1)
+            goods.append((item, cost))
+        return pos, rarity, goods

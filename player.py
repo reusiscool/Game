@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from entity import Entity, EntityStats, Team
+from skill import Skill
 from utils.move import Move
 from utils.utils import normalize, load_image
 from surroundings.rooms import RoomType
@@ -13,8 +14,7 @@ class PlayerStats(EntityStats):
     dash_cooldown: int
     dash_speed: int
     gold: int
-    reveal_distance: int
-    revealed_rooms: list[RoomType]
+    skill_points: int
 
     def add_mana(self, amount):
         self.mana = min(self.max_mana, self.mana + amount)
@@ -39,6 +39,23 @@ class Player(Entity):
         self.is_interacting = False
         self.is_passing = False
         self.highlighted = False
+        self.skills: list[Skill] = []
+
+    @property
+    def reveal_distance(self):
+        for sk, lvl in self.skills:
+            if sk == Skill.MiscMapDist:
+                return 4 + lvl
+        return 4
+
+    @property
+    def revealed_rooms(self) -> list[RoomType]:
+        ls = []
+        for sk, lvl in self.skills:
+            if sk == Skill.MiscMapKeyPortal:
+                ls.append(RoomType.Key)
+                ls.append(RoomType.Portal)
+        return ls
 
     @property
     def team(self):
@@ -113,8 +130,7 @@ class Player(Entity):
     def _serialize_stats(self):
         return tuple(int(i) for i in self.pos), self.stats.speed, self.stats.health,\
                self.stats.max_health, self.stats.mana, self.stats.max_mana,\
-               self.stats.dash_cooldown, self.stats.dash_speed, self.stats.gold,\
-               self.stats.reveal_distance, tuple(i.value for i in self.stats.revealed_rooms)
+               self.stats.dash_cooldown, self.stats.dash_speed, self.stats.gold, self.stats.skill_points
 
     def _serialize_tools(self):
         ls = []

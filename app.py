@@ -1,3 +1,5 @@
+import os
+
 import pygame
 import sys
 
@@ -21,7 +23,6 @@ class App:
         size = self.settings.resolution
         self.display = pygame.Surface((size[0] // 2, size[1] // 2))
         self.clock = pygame.time.Clock()
-        self.gs = GameScene(self.screen)
         self.ts = TitleScene(self.screen)
         self.pause = PauseScene(self.screen)
         self.dead = DeathScreen(self.screen)
@@ -30,24 +31,23 @@ class App:
 
     def run(self):
         while True:
+            # todo fix pause gamescene reload
             res = self.cur_scene.run()
             if res == Scene.Exit:
-                if self.cur_scene != self.ts:
-                    self.gs.save()
                 pygame.quit()
                 sys.exit()
             if res == Scene.GameScene:
-                self.cur_scene = self.gs
+                self.cur_scene = GameScene(self.screen, not self.has_save())
                 continue
             if res == Scene.TitleScene:
                 self.cur_scene = self.ts
-                self.gs.save()
                 continue
             if res == Scene.NewGame:
-                self.gs.restart()
-                self.cur_scene = self.gs
+                self.restart()
+                self.cur_scene = GameScene(self.screen, True)
                 continue
             if res == Scene.Pause:
+                self.cur_scene.save()
                 self.cur_scene = self.pause
                 continue
             if res == Scene.SettingScene:
@@ -58,3 +58,12 @@ class App:
                 continue
             if res == Scene.WinScreen:
                 self.cur_scene = self.win
+
+    def has_save(self):
+        with open(os.path.join('save_files', 'GameState.txt')) as f:
+            k = int(f.read())
+        return k != 0
+
+    def restart(self):
+        with open(os.path.join('save_files', 'GameState.txt'), 'w') as f:
+            f.write('0')

@@ -21,3 +21,9 @@ class AbilityLoot(BaseInteractable):
 
     def serialize(self):
         return SavingConstants().get_const(AbilityLoot), self.pos, *self.ability.serialize()
+
+    @classmethod
+    def read(cls, line):
+        pos = eval(line[1])
+        type_ = SavingConstants().get_type(int(line[2]))
+        return cls(pos, type_.read(line[2:]))

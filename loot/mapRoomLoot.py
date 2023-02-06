@@ -1,6 +1,7 @@
 import pygame
 
 from loot.baseLoot import BaseLoot
+from surroundings.rooms import RoomType
 from utils.infoDisplay import generate_description
 from utils.savingConst import SavingConstants
 
@@ -24,3 +25,9 @@ class MapRoomLoot(BaseLoot):
 
     def serialize(self):
         return SavingConstants().get_const(MapRoomLoot), self.pos, self.room_type.value
+
+    @classmethod
+    def read(cls, line):
+        pos = eval(line[1])
+        room_type = RoomType(int(line[2]))
+        return cls(pos, room_type)

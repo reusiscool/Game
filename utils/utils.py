@@ -5,12 +5,24 @@ import numpy
 from math import cos, sin, radians
 from typing import Iterable
 
+from .singleton import Singleton
+
+
+class LoadMemory(metaclass=Singleton):
+    def __init__(self):
+        self.d = {}
+
 
 def load_image(*path, color_key=None):
+    memory = LoadMemory()
+    hash_ = (path, color_key)
+    if hash_ in memory.d:
+        return memory.d[hash_]
     img = pygame.image.load(os.path.join('.', 'imgs', *path))
     if color_key is not None:
         img.set_colorkey(color_key)
     surf = img.convert()
+    memory.d[hash_] = surf
     return surf
 
 
