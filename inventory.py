@@ -1,4 +1,5 @@
 import pygame
+from math import ceil
 
 from items.baseItem import BaseItem
 
@@ -7,25 +8,38 @@ class Inventory:
     def __init__(self, size: int, surf_size):
         self.size = size
         self.items: list[BaseItem] = []
-        self.rects: list[pygame.Rect] = self.gen_rects(surf_size)
+        self.w, self.h = surf_size
+        self.rects: list[pygame.Rect] = self.gen_rects()
         self.cur_desc = None
 
     def resize(self, surf_size):
-        self.rects: list[pygame.Rect] = self.gen_rects(surf_size)
+        self.w, self.h = surf_size
+        self.rects: list[pygame.Rect] = self.gen_rects()
+
+    def add_slots(self, amount):
+        if amount <= 0:
+            raise ValueError(amount)
+        self.size += amount
+        self.size = min(25, self.size)
+        self.rects = self.gen_rects()
 
     @property
     def is_full(self):
         return len(self.items) >= self.size
 
-    def gen_rects(self, surf_size):
-        sx, sy = surf_size
-        item_size = sx // (self.size * 1.4)
-        x_off = sx // self.size
+    def gen_rects(self):
+        items_ina_row = 5
+        item_size = min(self.w, self.h) // (items_ina_row * 1.5)
+        row_num = ceil(self.size / items_ina_row)
+        gap_x = (self.w - item_size * items_ina_row) // (items_ina_row * 4)
+        gap_y = (self.h - item_size * items_ina_row) // (items_ina_row * 3)
         ans = []
-        for i in range(self.size):
-            y = sy // 2 - item_size // 2
-            x = sx // 2 + x_off * (i - 3) - item_size // 2
-            ans.append(pygame.Rect(x, y, item_size, item_size))
+        for i in range(row_num):
+            y = self.h // 2 - item_size // 2 + (item_size + gap_y) * (i - (row_num - 1) / 2)
+            iinr = min(self.size - items_ina_row * i, items_ina_row)
+            for j in range(iinr):
+                x = self.w // 2 - item_size // 2 + (item_size + gap_x) * (j - (iinr - 1) / 2)
+                ans.append(pygame.Rect(x, y, item_size, item_size))
         return ans
 
     def get_item(self, mpos):

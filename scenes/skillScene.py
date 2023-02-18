@@ -102,7 +102,9 @@ class SkillScene:
             Point(1, 1, 1, 20, SkillPoint(Skill.BerBlock, [Skill.BerCrit], 1, 0, 5, True)),
             Point(1, 1.5, 1, 20, SkillPoint(Skill.BerCrit, [], 4, 0, 1, False)),
             Point(1, -1.5, 1, 20, SkillPoint(Skill.MiscMapDist, [Skill.MiscMapKeyPortal], 1, 0, 1, True)),
-            Point(1, -1, 1, 20, SkillPoint(Skill.MiscMapKeyPortal, [], 1, 0, 1, True))
+            Point(1, -1, 1, 20, SkillPoint(Skill.MiscMapKeyPortal, [], 1, 0, 1, True)),
+            Point(0.9, -1.1, 1, 20, SkillPoint(Skill.MiscInventorySlot, [], 1, 0, 7, True)),
+            Point(-1, 1, 1, 20, SkillPoint(Skill.TankHealth, [], 1, 0, 4, True))
             ]
         for p in self.points:
             p.normalize()
@@ -127,7 +129,9 @@ class SkillScene:
     @property
     def cur_desc(self):
         sb = self.highlighted.sp
-        txt = generate_description('large_font', {'Name': f'{sb.skill}',
+        name, desc = sb.skill.get_desc()
+        txt = generate_description('large_font', {'Name': name,
+                                                  'Description': desc,
                                                   'Level': f'{sb.cur_level} out of {sb.max_level}',
                                                   'price': f'{sb.price}'}, 'Skill')
         return txt
@@ -165,6 +169,12 @@ class SkillScene:
                     if point.sp.skill == skill:
                         point.sp.is_unlocked = True
                         break
+        if skill_box.skill == Skill.MiscInventorySlot:
+            self.player.inventory.add_slots(1)
+        elif skill_box.skill == Skill.TankHealth:
+            health, speed = skill_box.skill.get_stats()
+            self.player.stats.max_health += health
+            self.player.stats.speed -= speed
         self.player.stats.skill_points -= skill_box.price
         skill_box.cur_level += 1
 

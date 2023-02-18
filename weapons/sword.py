@@ -121,7 +121,7 @@ class Sword(BaseWeapon):
             if stat_score[ind] >= 100:
                 ind = (ind + 1) % 5
                 continue
-            roll = randint(0, 3)
+            roll = randint(0, 1) * 15
             stat_score[ind] += roll
             score -= roll
             ind = (ind + 1) % 5

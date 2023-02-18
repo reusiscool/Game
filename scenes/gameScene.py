@@ -71,6 +71,7 @@ class GameScene:
     def _load_player(self):
         with open(os.path.join('save_files', 'player.csv')) as f:
             reader = csv.reader(f)
+            inv_size = next(reader)[0]
             stat_line = next(reader)
             w1 = next(reader)
             w2 = next(reader)
@@ -80,10 +81,10 @@ class GameScene:
                 items.append(item)
         abl = SavingConstants().load(ast)
         pos = eval(stat_line[0])
-        stats = [int(i) for i in stat_line[1:]]
+        stats = [float(i) for i in stat_line[1:]]
         stats = PlayerStats((*pos, 10), *stats)
         weapons1 = [SavingConstants().load(w1), SavingConstants().load(w2)]
-        invent = Inventory(7, self.display.get_size())
+        invent = Inventory(int(inv_size), self.display.get_size())
         for i in items:
             item = SavingConstants().get_type(int(i[0]))
             item = item(*(int(i) for i in i[1:]))

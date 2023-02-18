@@ -107,9 +107,7 @@ class SavingConstants(metaclass=Singleton):
         from weapons.ability import Ability
         from loot.moneyLoot import MoneyLoot
         from interactables.darkShop import DarkShop
-        from loot.mapDistLoot import MapDistLoot
-        from loot.mapRoomLoot import MapRoomLoot
-        from surroundings.rooms import RoomType
+        from loot.skillPointLoot import SkillPointLoot
         from puzzles.ticPuzzle import TicTacToePuzzle
         from puzzles.liarPuzzle import LiarPuzzle
         from weapons.dropSwords import GoldenSword
@@ -117,7 +115,7 @@ class SavingConstants(metaclass=Singleton):
 
         self._types = [DashEnemy, ShootingEnemy, KeyItemLoot, Trap, WeaponLoot, TicTacToePuzzle, LiarPuzzle, Portal, HealItem, KeyItem,
                        HealItemLoot, HealthLoot, ManaLoot, ManaItem, ManaItemLoot, Shop, AbilityLoot, Sword, Ability,
-                       MoneyLoot, DarkShop, MapDistLoot, MapRoomLoot, GoldenSword, ManaSword]
+                       MoneyLoot, DarkShop, GoldenSword, ManaSword, SkillPointLoot]
         self._const = dict()
         for i, var in enumerate(self._types):
             self._const[var] = i
@@ -174,32 +172,18 @@ class SavingConstants(metaclass=Singleton):
             [(ManaItemLoot, lambda x: (35, healitem_cost(x))),
              (HealItemLoot, lambda x: (20, healitem_cost(x)))],
 
-            [(ManaItemLoot, lambda x: (45, healitem_cost(x))),
-             (HealItemLoot, lambda x: (30, healitem_cost(x))),
-             (MapDistLoot, lambda x: (30 + x * 5,))],
+            [
+                (ManaItemLoot, lambda x: (45, healitem_cost(x))),
+                (HealItemLoot, lambda x: (30, healitem_cost(x)))
+            ],
 
-            [(MapDistLoot, lambda x: (20 + x * 3,)),
-             (MapRoomLoot, lambda x: (RoomType.Combat, 40 + x * 3))],
-            [(AbilityLoot, lambda x: (Ability.generate(3, x + 3), 100 + x * 40))]
+            [
+                (SkillPointLoot, lambda x: (x * 10 + 20,))
+            ],
+            [
+                (AbilityLoot, lambda x: (Ability.generate(3, x + 3), 100 + x * 40))
+            ]
         ]
-        self._loads = {
-            WeaponLoot: WeaponLoot.read,
-            KeyItemLoot: KeyItemLoot.read,
-            Portal: Portal.read,
-            HealthLoot: HealthLoot.read,
-            ManaLoot: ManaLoot.read,
-            ManaItemLoot: ManaItemLoot.read,
-            HealItemLoot: HealItemLoot.read,
-            Shop: Shop.read,
-            AbilityLoot: AbilityLoot.read,
-            Sword: Sword.read,
-            Ability: Ability.read,
-            MoneyLoot: MoneyLoot.read,
-            DarkShop: DarkShop.read,
-            MapDistLoot: MapDistLoot.read,
-            MapRoomLoot: MapRoomLoot.read,
-            Trap: Trap.read
-        }
 
     def get_const(self, type_) -> int:
         return self._const[type_]

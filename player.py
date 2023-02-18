@@ -125,7 +125,7 @@ class Player(Entity):
         self.stats.add_mana(amount)
 
     def serialize(self):
-        return [self._serialize_stats()] + self._serialize_tools() + self._serialize_inventory()
+        return [[self.inventory.size]] + [self._serialize_stats()] + self._serialize_tools() + self._serialize_inventory()
 
     def _serialize_stats(self):
         return tuple(int(i) for i in self.pos), self.stats.speed, self.stats.health,\
