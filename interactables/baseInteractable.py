@@ -25,11 +25,12 @@ class BaseInteractable(ABC):
     def update(self, board):
         for obj in board.get_entities(self.pos, self.hitbox_size * 3):
             if self.rect.colliderect(obj.rect) and isinstance(obj, Player):
+                if obj.highlighted:
+                    continue
+                obj.highlighted = True
+                self.highlighted = True
                 if obj.is_interacting:
                     self.interact(obj, board)
-                elif not obj.highlighted:
-                    obj.highlighted = True
-                    self.highlighted = True
                 break
         else:
             self.highlighted = False

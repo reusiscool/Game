@@ -1,3 +1,4 @@
+from math import dist
 from random import choice, randint
 import pygame
 
@@ -51,7 +52,7 @@ class GrassController:
             self.cached_surfs[ind][i] = surf
         self.put(pos, ind)
 
-    def update(self, force_pos=None):  # todo mb force_pos List
+    def update(self):
         self.time = 0 if self.time >= self.time_cap - self.speed else self.time + self.speed
 
     def get_items(self, pos, distance, map_):
@@ -68,12 +69,25 @@ class GrassController:
                 ls += map_[pos]
         return ls
 
-    def retrieve_surfs(self, pos, distance):
+    def retrieve_surfs(self, pos, distance, force_pos=None):
         res = []
-        for i in self.get_items(pos, distance, self.grass_chunks):
-            res.append(GrassChunk(i[0],
-                                  self.cached_surfs[int(i[1])][int(self.time)],
-                                  self.addition))
+        if force_pos is not None:
+            for i in self.get_items(pos, distance, self.grass_chunks):
+                s = self.cached_surfs[int(i[1])][int(self.time)]
+                if dist(i[0], force_pos) <= 20:
+                    newsurf = pygame.Surface((s.get_width(), s.get_height()))
+                    newsurf.blit(s, (0, 0))
+                    black_surf = pygame.Surface((s.get_width(), s.get_height()), pygame.SRCALPHA)
+                    black_surf.fill((0, 0, 0, 100))
+                    s = newsurf
+                    s.blit(black_surf, (0, 0))
+                    s.set_colorkey('black')
+                res.append(GrassChunk(i[0], s, self.addition))
+        else:
+            for i in self.get_items(pos, distance, self.grass_chunks):
+                res.append(GrassChunk(i[0],
+                                      self.cached_surfs[int(i[1])][int(self.time)],
+                                      self.addition))
         return sorted(res, key=lambda o: sum(o.pos))
 
 

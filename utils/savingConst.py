@@ -113,9 +113,9 @@ class SavingConstants(metaclass=Singleton):
         from weapons.dropSwords import GoldenSword
         from weapons.dropSwords import ManaSword
 
-        self._types = [DashEnemy, ShootingEnemy, KeyItemLoot, Trap, WeaponLoot, TicTacToePuzzle, LiarPuzzle, Portal, HealItem, KeyItem,
-                       HealItemLoot, HealthLoot, ManaLoot, ManaItem, ManaItemLoot, Shop, AbilityLoot, Sword, Ability,
-                       MoneyLoot, DarkShop, GoldenSword, ManaSword, SkillPointLoot]
+        self._types = [DashEnemy, ShootingEnemy, KeyItemLoot, Trap, WeaponLoot, TicTacToePuzzle, LiarPuzzle, Portal,
+                       HealItem, KeyItem, HealItemLoot, HealthLoot, ManaLoot, ManaItem, ManaItemLoot, Shop, AbilityLoot,
+                       Sword, Ability, MoneyLoot, DarkShop, GoldenSword, ManaSword, SkillPointLoot]
         self._const = dict()
         for i, var in enumerate(self._types):
             self._const[var] = i
@@ -168,9 +168,10 @@ class SavingConstants(metaclass=Singleton):
              (WeaponLoot, lambda x: (Sword.generate(3, x + 3), 100 + x * 40))]
         ]
         self.dark_shop_items = [
-
-            [(ManaItemLoot, lambda x: (35, healitem_cost(x))),
-             (HealItemLoot, lambda x: (20, healitem_cost(x)))],
+            [
+                (ManaItemLoot, lambda x: (35, healitem_cost(x))),
+                (HealItemLoot, lambda x: (20, healitem_cost(x)))
+            ],
 
             [
                 (ManaItemLoot, lambda x: (45, healitem_cost(x))),
@@ -180,10 +181,13 @@ class SavingConstants(metaclass=Singleton):
             [
                 (SkillPointLoot, lambda x: (x * 10 + 20,))
             ],
+
             [
                 (AbilityLoot, lambda x: (Ability.generate(3, x + 3), 100 + x * 40))
             ]
         ]
+        self.rarity_color = ['Grey', 'Green', 'Purple', 'Yellow']
+        self.rarity_names = ['Common', 'Uncommon', 'Epic', 'Legendary']
 
     def get_const(self, type_) -> int:
         return self._const[type_]

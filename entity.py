@@ -1,12 +1,14 @@
 from dataclasses import dataclass
+from math import ceil
 from typing import Tuple
+from enum import Enum
+import pygame
 
 from abc import ABC, abstractmethod
 from utils.converters import mum_convert
 from utils.customFont import single_font
 from utils.move import Move
-from enum import Enum
-import pygame
+from effects import Effect, EffectContainer
 
 
 @dataclass(slots=True)
@@ -40,6 +42,7 @@ class Entity(ABC):
         self.damage_time = 0
         self.damage_img = None
         self.collided = False
+        self.effects: list[EffectContainer] = []
 
     @property
     def rect(self):
@@ -83,9 +86,25 @@ class Entity(ABC):
                     rect.top = r.bottom
                 self.y = rect.y
 
+    def _get_effect(self, effect):
+        mult = 0
+        for i in self.effects:
+            if i.effect == effect:
+                mult += i.stats
+        return mult / 100
+
+    @property
+    def _receive_damage_multiplier(self):
+        return 1
+
+    @property
+    def _movement_multiplier(self):
+        return max(0, 1 - self._get_effect(Effect.Slowness) + self._get_effect(Effect.Swiftness))
+
     def damage(self, amount):
         if amount < 0:
             return
+        amount = ceil(amount * self._receive_damage_multiplier)
         font = single_font('large_font')
         self.damage_img = font.render(str(amount))
         self.stats.health = max(0, self.stats.health - amount)
@@ -102,8 +121,8 @@ class Entity(ABC):
         dy = 0
         for mov in self.move_q:
             if mov.own_speed:
-                dx += mov.dx * self.stats.speed
-                dy += mov.dy * self.stats.speed
+                dx += mov.dx * self.stats.speed * self._movement_multiplier
+                dy += mov.dy * self.stats.speed * self._movement_multiplier
                 continue
             dx += mov.dx
             dy += mov.dy
@@ -111,6 +130,11 @@ class Entity(ABC):
             i.update()
         self.move_q = [i for i in self.move_q if i.duration > 0]
         return dx, dy
+
+    def update_effects(self):
+        for i in self.effects:
+            i.update()
+        self.effects = [i for i in self.effects if i.time_left >= 0]
 
     def update(self, board):
         board.pop_entity(self)
@@ -121,6 +145,7 @@ class Entity(ABC):
         self._move_y(dy, ls)
         if self.stats.health > 0:
             board.add_entity(self)
+        self.update_effects()
 
     def render(self, surf: pygame.Surface, camera_x, camera_y):
         self.image_index += 1

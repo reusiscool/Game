@@ -1,3 +1,4 @@
+from copy import deepcopy
 import pygame
 import csv
 import os
@@ -10,39 +11,40 @@ from puzzles.basePuzzle import BasePuzzle, PuzzleResult
 from puzzles.ticLogic import GameState
 from utils.infoDisplay import generate_description
 from utils.utils import load_image
-
-tic_sets = []
-
-
-def read_sets():
-    global tic_sets
-    tic_sets = []
-    with open(os.path.join('puzzles', 'ticSets.csv')) as f:
-        reader = csv.reader(f)
-        for line in reader:
-            pos = [int(i) for i in line[:9]]
-            pos = [[Mark(pos[i + j * 3]) for i in range(3)] for j in range(3)]
-            tic_sets.append((pos, int(line[9])))
+from utils.singleton import Singleton
 
 
-class TicTacToePuzzle(BasePuzzle):
-    def __init__(self, pos, reward: list[BaseLoot] = None, level=0):
-        super().__init__(pos, reward)
-        if not tic_sets:
-            read_sets()
-        fk, self.draw_wins = self._get_set(level)
-        self.board = TicTacToeBoard(fk)
+class SetsReader(metaclass=Singleton):
+    def __init__(self):
+        self.tic_sets = []
+        self.read_sets()
 
-    def get_image(self):
-        return load_image('puzzles', 'tic_tac_toe.png', color_key='white')
+    def read_sets(self):
+        self.tic_sets.clear()
+        with open(os.path.join('puzzles', 'ticSets.csv')) as f:
+            reader = csv.reader(f)
+            for line in reader:
+                pos = [int(i) for i in line[:9]]
+                pos = [[Mark(pos[i + j * 3]) for i in range(3)] for j in range(3)]
+                self.tic_sets.append((pos, int(line[9])))
 
-    def _get_set(self, level):
+    def get_random(self, level):
         while True:
             ind = numpy.random.normal(max(level, 8), 2.7)
             if ind < 0 or ind >= 9:
                 continue
             break
-        return tic_sets[int(ind)]
+        return self.tic_sets[int(ind)]
+
+
+class TicTacToePuzzle(BasePuzzle):
+    def __init__(self, pos, reward: list[BaseLoot], level=0):
+        super().__init__(pos, reward)
+        fk, self.draw_wins = SetsReader().get_random(level)
+        self.board = TicTacToeBoard(deepcopy(fk))
+
+    def get_image(self):
+        return load_image('puzzles', 'tic_tac_toe.png', color_key='white')
 
     def run(self) -> PuzzleResult:
         screen = pygame.display.get_surface()

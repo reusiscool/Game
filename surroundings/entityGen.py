@@ -106,7 +106,7 @@ class EntityGen:
         for entity in entity_list:
             if self.constants.contains(type(entity)) or isinstance(entity, BasePuzzle):
                 ls.append(entity.serialize())
-        with open(os.path.join('save_files', 'entities.csv'), 'w') as f:
+        with open(os.path.join('save_files', 'entities.csv'), mode='w', newline='') as f:
             writer = csv.writer(f)
             writer.writerows(ls)
 

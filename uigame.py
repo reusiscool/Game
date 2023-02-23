@@ -64,10 +64,10 @@ class UIGame:
         my //= 2
 
         if self.slot1.collidepoint(mx, my):
-            s = generate_description('large_font', self.player.weapon_list[0].stats.__dict__, 'Weapon')
+            s = self.player.weapon_list[0].desc
             surf.blit(s, (surf.get_width() - s.get_width(), 0))
         elif self.slot2.collidepoint(mx, my):
-            s = generate_description('large_font', self.player.weapon_list[1].stats.__dict__, 'Weapon')
+            s = self.player.weapon_list[1].desc
             surf.blit(s, (surf.get_width() - s.get_width(), 0))
         elif self.hp.collidepoint(mx, my):
             s = generate_description('large_font', [f"{self.player.stats.health} :"

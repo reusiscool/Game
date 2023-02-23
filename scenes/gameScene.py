@@ -63,8 +63,8 @@ class GameScene:
         invent = Inventory(7, self.display.get_size())
         hl = HealItem(20)
         invent.add_item(hl)
-        sw_st1 = ManaSwordStats(25, 45, 40, 40, 30, 10)
-        sw_st2 = SwordStats(10, 100, 45, 60, 60)
+        sw_st1 = ManaSwordStats(25, 45, 40, 40, 30, 0, 10)
+        sw_st2 = SwordStats(10, 100, 45, 60, 60, 0)
         ast = AbilityStats(20, 20, 10)
         return Player(ps, invent, [ManaSword(sw_st1), Sword(sw_st2)], Ability(ast))
 
@@ -81,7 +81,7 @@ class GameScene:
                 items.append(item)
         abl = SavingConstants().load(ast)
         pos = eval(stat_line[0])
-        stats = [float(i) for i in stat_line[1:]]
+        stats = [int(i) if i.isdigit() else float(i) for i in stat_line[1:]]
         stats = PlayerStats((*pos, 10), *stats)
         weapons1 = [SavingConstants().load(w1), SavingConstants().load(w2)]
         invent = Inventory(int(inv_size), self.display.get_size())
@@ -96,6 +96,8 @@ class GameScene:
 
         if keys[pygame.K_SPACE]:
             self.player.secondary_attack()
+        if pygame.mouse.get_pressed(3)[2]:
+            self.player.is_blocking = True
 
         s = keys[pygame.K_s]
         d = keys[pygame.K_d]

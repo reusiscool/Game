@@ -139,6 +139,7 @@ class Board:
             i.update(self)
         self.player.is_interacting = False
         self.player.highlighted = False
+        self.player.is_blocking = False
         self.gc.update()
 
     def render(self, surf, camera_x, camera_y, x, y):
@@ -152,7 +153,7 @@ class Board:
         grass_map = {}
         for i in self.projectiles:
             self.add_item(i, proj_map)
-        for chunk in self.gc.retrieve_surfs((x, y), self.render_distance):
+        for chunk in self.gc.retrieve_surfs((x, y), self.render_distance, self.player.pos):
             self.add_item(chunk, grass_map)
         for ny in range(sty, endy + 1):
             for nx in range(stx, endx + 1):

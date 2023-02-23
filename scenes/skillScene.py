@@ -37,6 +37,7 @@ class Point:
     z: float
     size: float
     sp: SkillPoint
+
     # another dataclass container ??? sounds lame. no colour tho
 
     @property
@@ -94,7 +95,8 @@ class SkillScene:
         pygame.init()
         self.screen = screen
         self.player = player
-        self.W, self.H = screen.get_width(), screen.get_height()
+        self.W, self.H = screen.get_width() // 2, screen.get_height() // 2
+        self.display = pygame.Surface((self.W, self.H))
         self.FPS = 120
         self.font = single_font('large_font')
         self.clock = pygame.time.Clock()
@@ -102,10 +104,10 @@ class SkillScene:
             Point(1, 1, 1, 20, SkillPoint(Skill.BerBlock, [Skill.BerCrit], 1, 0, 5, True)),
             Point(1, 1.5, 1, 20, SkillPoint(Skill.BerCrit, [], 4, 0, 1, False)),
             Point(1, -1.5, 1, 20, SkillPoint(Skill.MiscMapDist, [Skill.MiscMapKeyPortal], 1, 0, 1, True)),
-            Point(1, -1, 1, 20, SkillPoint(Skill.MiscMapKeyPortal, [], 1, 0, 1, True)),
+            Point(1, -1, 1, 20, SkillPoint(Skill.MiscMapKeyPortal, [], 1, 0, 1, False)),
             Point(0.9, -1.1, 1, 20, SkillPoint(Skill.MiscInventorySlot, [], 1, 0, 7, True)),
             Point(-1, 1, 1, 20, SkillPoint(Skill.TankHealth, [], 1, 0, 4, True))
-            ]
+        ]
         for p in self.points:
             p.normalize()
         self.scale = 1
@@ -114,30 +116,43 @@ class SkillScene:
     def render_point(self, point):
         x, y, size = point.project(self.W, self.H, self.scale)
         if point is self.highlighted and type(point.color) != str:
-            pygame.draw.circle(self.screen, [min(255, i + 50) for i in point.color], (x, y), size)
+            pygame.draw.circle(self.display, [min(255, i + 50) for i in point.color], (x, y), size)
         else:
-            pygame.draw.circle(self.screen, point.color, (x, y), size)
+            pygame.draw.circle(self.display, point.color, (x, y), size)
 
     def render(self):
         for point in self.points:
             self.render_point(point)
+        point_count = generate_description('large_font', [], 'Points: ' + str(self.player.stats.skill_points))
+        self.display.blit(point_count, (0, 0))
         if self.highlighted is None:
             return
         desc = self.cur_desc
-        self.screen.blit(desc, (self.W - desc.get_width(), 0))
+        self.display.blit(desc, (self.W - desc.get_width(), 0))
 
     @property
     def cur_desc(self):
         sb = self.highlighted.sp
         name, desc = sb.skill.get_desc()
-        txt = generate_description('large_font', {'Name': name,
-                                                  'Description': desc,
-                                                  'Level': f'{sb.cur_level} out of {sb.max_level}',
-                                                  'price': f'{sb.price}'}, 'Skill')
-        return txt
+        d = {'Name': name,
+             'Description': desc,
+             'Level': f'{sb.cur_level} out of {sb.max_level}',
+             'price': f'{sb.price}'}
+        if sb.is_unlocked:
+            return generate_description('large_font', d, 'Skill')
+        ls = []
+        for sk in self.points:
+            sk = sk.sp
+            if sb.skill in sk.unlocks_skills:
+                ls.append(sk.skill.get_desc()[0])
+        if ls:
+            d['Requires'] = ', '.join(ls)
+        return generate_description('large_font', d, 'Skill')
 
     def update(self):
         mx, my = pygame.mouse.get_pos()
+        mx //= 2
+        my //= 2
         for point in reversed(self.points):
             x, y, size = point.project(self.W, self.H, self.scale)
             if dist((x, y), (mx, my)) <= size:
@@ -160,15 +175,11 @@ class SkillScene:
         skill_box = self.highlighted.sp
         if skill_box.price > self.player.stats.skill_points:
             return
-        if skill_box.cur_level == skill_box.max_level\
+        if skill_box.cur_level == skill_box.max_level \
                 or not skill_box.is_unlocked:
             return
         if skill_box.cur_level == 0:
-            for skill in skill_box.unlocks_skills:
-                for point in self.points:
-                    if point.sp.skill == skill:
-                        point.sp.is_unlocked = True
-                        break
+            self.unlock_skills(skill_box)
         if skill_box.skill == Skill.MiscInventorySlot:
             self.player.inventory.add_slots(1)
         elif skill_box.skill == Skill.TankHealth:
@@ -177,6 +188,13 @@ class SkillScene:
             self.player.stats.speed -= speed
         self.player.stats.skill_points -= skill_box.price
         skill_box.cur_level += 1
+
+    def unlock_skills(self, skill_box: SkillPoint):
+        for skill in skill_box.unlocks_skills:
+            for point in self.points:
+                if point.sp.skill == skill:
+                    point.sp.is_unlocked = True
+                    break
 
     def get_skills(self, only_upgraded=False) -> list[tuple[Skill, int]]:
         ls = []
@@ -207,9 +225,10 @@ class SkillScene:
                 sx, sy = speed
                 speed = sx * 0.97, sy * 0.97
             self.rotate(*speed)
-            self.screen.fill('black')
+            self.display.fill('black')
             self.update()
             self.render()
+            self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
             self.clock.tick(self.FPS)
             pygame.display.flip()
 
@@ -230,4 +249,6 @@ class SkillScene:
             for point in self.points:
                 if point.sp.skill == skil:
                     point.sp.cur_level = lvl
+                    self.unlock_skills(point.sp)
                     break
+

@@ -20,6 +20,7 @@ class SwordStats:
     angle: int
     cooldown: int
     knockback: int
+    rarity: int
 
 
 class Sword(BaseWeapon):
@@ -35,6 +36,12 @@ class Sword(BaseWeapon):
     def desc(self):
         if self._desc is None:
             self._desc = generate_description('large_font', self.stats.__dict__, 'Sword')
+        self._desc.set_colorkey('black')
+        w, h = self._desc.get_size()
+        new_desc = pygame.Surface((w, h))
+        new_desc.fill(SavingConstants().rarity_color[self.stats.rarity])
+        new_desc.blit(self._desc, (0, 0))
+        self._desc = new_desc
         return self._desc
 
     def kill_drop(self, board, owner):
@@ -55,7 +62,7 @@ class Sword(BaseWeapon):
             if dist(obj.pos, owner.pos) <= self.stats.range_ and \
                     vector_angle((obj.x - owner.x, obj.y - owner.y),
                                  owner.looking_direction) >= self.cosa:
-                obj.damage(self.stats.damage)
+                obj.damage(self.stats.damage + (self.stats.damage if owner.has_crited else 0))
                 self.hit_drop(board, owner)
                 if obj.stats.health <= 0:
                     self.kill_drop(board, owner)
@@ -105,7 +112,7 @@ class Sword(BaseWeapon):
 
     def serialize(self):
         return SavingConstants().get_const(type(self)), self.stats.damage, self.stats.range_,\
-               self.stats.angle, self.stats.cooldown, self.stats.knockback
+               self.stats.angle, self.stats.cooldown, self.stats.knockback, self.stats.rarity
 
     @classmethod
     def generate(cls, rarity, lvl):
@@ -127,7 +134,7 @@ class Sword(BaseWeapon):
             ind = (ind + 1) % 5
         stats = [raw_stats[i] * stat_score[i] // 100 + min_stats[i] for i in range(5)]
         stats[3] = 100 - stats[3]
-        return cls(SwordStats(*stats))
+        return cls(SwordStats(*stats, rarity))
 
     @staticmethod
     def get_stats_type():

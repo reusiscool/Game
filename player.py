@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from random import randint
 
 from entity import Entity, EntityStats, Team
 from skill import Skill
 from utils.move import Move
 from utils.utils import normalize, load_image
 from surroundings.rooms import RoomType
+from effects import Effect, EffectContainer
 
 
 @dataclass(slots=True)
@@ -39,7 +41,8 @@ class Player(Entity):
         self.is_interacting = False
         self.is_passing = False
         self.highlighted = False
-        self.skills: list[Skill] = []
+        self.is_blocking = False
+        self.skills: list[tuple[Skill, int]] = []
 
     @property
     def reveal_distance(self):
@@ -61,6 +64,34 @@ class Player(Entity):
     def team(self):
         return Team.Player
 
+    @property
+    def _has_block(self):
+        return not not [i for i in self.skills if i[0] == Skill.BerBlock]
+
+    @property
+    def _receive_damage_multiplier(self):
+        if self._has_block and self.is_blocking:
+            return 0.5
+        return 1
+
+    @property
+    def _movement_multiplier(self):
+        k = super()._movement_multiplier
+        if self._has_block and self.is_blocking:
+            return k * 0.5
+        return k
+
+    @property
+    def _crit_chance(self):
+        """measured in per cents"""
+        if not [i for i in self.skills if i[0] == Skill.BerCrit]:
+            return 0
+        return 20
+
+    @property
+    def has_crited(self):
+        return randint(1, 100) <= self._crit_chance
+
     def render(self, surf, camera_x, camera_y):
         self.weapon_list[self.weapon_index].render(surf, camera_x, camera_y, self)
         super().render(surf, camera_x, camera_y)
@@ -73,24 +104,6 @@ class Player(Entity):
 
     def attack(self):
         self.try_attack = True
-
-    def calc_movement(self):
-        dx = 0
-        dy = 0
-        for mov in self.move_q:
-            if mov.own_speed:
-                sx, sy = normalize(*mov.pos)
-                dx += sx * self.stats.speed * (1 - self.dash_current_cooldown /
-                                               self.stats.dash_cooldown) ** 0.5
-                dy += sy * self.stats.speed * (1 - self.dash_current_cooldown /
-                                               self.stats.dash_cooldown) ** 0.5
-                continue
-            dx += mov.dx
-            dy += mov.dy
-        for i in self.move_q:
-            i.update()
-        self.move_q = [i for i in self.move_q if i.duration > 0]
-        return dx, dy
 
     def update(self, board):
         super().update(board)
@@ -106,12 +119,16 @@ class Player(Entity):
             self.try_sec_attack = False
 
     def move_input(self, x, y):
-        self.move_move(Move(x, y, own_speed=True, normalize=True))
+        mv = Move(x, y, own_speed=True, normalize=True)
+        self.move_move(mv)
 
     def dash(self, dx, dy):
         dx, dy = normalize(dx, dy)
         if self.dash_current_cooldown:
             return
+        self.effects.append(EffectContainer(Effect.Slowness, 4, 30))
+        self.effects.append(EffectContainer(Effect.Slowness, 4, 30))
+        self.effects.append(EffectContainer(Effect.Slowness, 4, 20))
         self.dash_current_cooldown = self.stats.dash_cooldown
         self.move_q.append(Move(dx * self.stats.dash_speed, dy * self.stats.dash_speed, 10))
         self.move_q.append(Move(dx * self.stats.dash_speed, dy * self.stats.dash_speed, 7))
@@ -125,7 +142,8 @@ class Player(Entity):
         self.stats.add_mana(amount)
 
     def serialize(self):
-        return [[self.inventory.size]] + [self._serialize_stats()] + self._serialize_tools() + self._serialize_inventory()
+        return [[self.inventory.size]] + [self._serialize_stats()]\
+               + self._serialize_tools() + self._serialize_inventory()
 
     def _serialize_stats(self):
         return tuple(int(i) for i in self.pos), self.stats.speed, self.stats.health,\
