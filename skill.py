@@ -17,10 +17,10 @@ class Skill(Enum):
             raise NotImplementedError
         return skill_desc[self]
 
-    def get_stats(self):
+    def get_stats(self, level):
         if self not in skill_stats:
             raise ValueError
-        return skill_stats[self]
+        return skill_stats[self][level]
 
     def get_price(self, level):
         pass
@@ -29,9 +29,9 @@ class Skill(Enum):
 # todo prices
 skill_price = {}
 skill_stats = {
-    Skill.BerBlock: 0,
-    Skill.BerVamp: 0,
-    Skill.TankHealth: (10, 0.1)
+    Skill.BerBlock: [0, 50, 65, 80, 90, 100],
+    Skill.BerVamp: [0, 0],
+    Skill.TankHealth: [0, (10, 0.1)]
 }
 skill_desc = {
     Skill.BerBlock: ('Block', 'Hold mouse button to block damage slowing down'),

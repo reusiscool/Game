@@ -12,6 +12,7 @@ from loot.keyItemLoot import KeyItemLoot
 from enemies.baseEnemy import EnemyStats
 from loot.moneyLoot import MoneyLoot
 from puzzles.basePuzzle import BasePuzzle
+from puzzles.silverPuzzle import SilverPuzzle
 from surroundings.trap import Trap, TrapStats
 from surroundings.rooms import Room, RoomType
 from utils.savingConst import SavingConstants
@@ -52,7 +53,7 @@ class EntityGen:
                 self.noncolliders.append(Trap(ts))
 
     def _gen_puzzle(self, room):
-        puzzle = choice((TicTacToePuzzle, LiarPuzzle))
+        puzzle = choice((TicTacToePuzzle, LiarPuzzle, SilverPuzzle))
         pos = room.pos_to_tiles(self.tile_size)
         reward = []
         for _ in range(3):

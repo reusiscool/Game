@@ -178,16 +178,16 @@ class SkillScene:
         if skill_box.cur_level == skill_box.max_level \
                 or not skill_box.is_unlocked:
             return
+        skill_box.cur_level += 1
+        self.player.stats.skill_points -= skill_box.price
         if skill_box.cur_level == 0:
             self.unlock_skills(skill_box)
         if skill_box.skill == Skill.MiscInventorySlot:
             self.player.inventory.add_slots(1)
         elif skill_box.skill == Skill.TankHealth:
-            health, speed = skill_box.skill.get_stats()
+            health, speed = skill_box.skill.get_stats(skill_box.cur_level)
             self.player.stats.max_health += health
             self.player.stats.speed -= speed
-        self.player.stats.skill_points -= skill_box.price
-        skill_box.cur_level += 1
 
     def unlock_skills(self, skill_box: SkillPoint):
         for skill in skill_box.unlocks_skills:

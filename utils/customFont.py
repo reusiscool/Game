@@ -37,13 +37,14 @@ class CustomFont:
         for x in range(surf.get_width()):
             if surf.get_at((x, 0))[0] == 127:
                 s = surf.subsurface(x - cur_width, 0, cur_width, self.height)
+                s.set_colorkey('black')
                 self.characters[order[cur_char]] = s
                 cur_width = 0
                 cur_char += 1
             else:
                 cur_width += 1
 
-    def render(self, text):
+    def render(self, text, color='black', alpha=False):
         sx = 0
         sy = self.height
         for i in text:
@@ -54,7 +55,11 @@ class CustomFont:
             else:
                 sx += self.characters[i].get_width() + 1
         sx -= 1
-        surf = pygame.Surface((sx, sy))
+        if alpha:
+            surf = pygame.Surface((sx, sy), pygame.SRCALPHA)
+        else:
+            surf = pygame.Surface((sx, sy))
+            surf.fill(color)
         x = 0
         for char in text:
             if char == ' ':

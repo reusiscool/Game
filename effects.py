@@ -8,10 +8,12 @@ class Effect(Enum):
     Strength = 2
     Crit = 3
 
-    def get_stats(self, lvl):  # todo
+    def get_stats(self, lvl):
         if self == Effect.Slowness:
             return [5, 10, 15, 20][lvl - 1]
         if self == Effect.Swiftness:
+            return [5, 10, 15, 20][lvl - 1]
+        if self == Effect.Crit:
             return [5, 10, 15, 20][lvl - 1]
 
 

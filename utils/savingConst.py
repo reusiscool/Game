@@ -110,12 +110,13 @@ class SavingConstants(metaclass=Singleton):
         from loot.skillPointLoot import SkillPointLoot
         from puzzles.ticPuzzle import TicTacToePuzzle
         from puzzles.liarPuzzle import LiarPuzzle
+        from puzzles.silverPuzzle import SilverPuzzle
         from weapons.dropSwords import GoldenSword
         from weapons.dropSwords import ManaSword
 
         self._types = [DashEnemy, ShootingEnemy, KeyItemLoot, Trap, WeaponLoot, TicTacToePuzzle, LiarPuzzle, Portal,
                        HealItem, KeyItem, HealItemLoot, HealthLoot, ManaLoot, ManaItem, ManaItemLoot, Shop, AbilityLoot,
-                       Sword, Ability, MoneyLoot, DarkShop, GoldenSword, ManaSword, SkillPointLoot]
+                       Sword, Ability, MoneyLoot, DarkShop, GoldenSword, ManaSword, SkillPointLoot, SilverPuzzle]
         self._const = dict()
         for i, var in enumerate(self._types):
             self._const[var] = i

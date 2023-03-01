@@ -70,9 +70,14 @@ class Player(Entity):
 
     @property
     def _receive_damage_multiplier(self):
-        if self._has_block and self.is_blocking:
-            return 0.5
-        return 1
+        if not (self._has_block and self.is_blocking):
+            return 1
+        mx = 0
+        for i in self.skills:
+            if i[0] != Skill.BerBlock:
+                continue
+            mx = max(mx, i[1])
+        return 1 - Skill.BerBlock.get_stats(mx)
 
     @property
     def _movement_multiplier(self):
@@ -86,7 +91,7 @@ class Player(Entity):
         """measured in per cents"""
         if not [i for i in self.skills if i[0] == Skill.BerCrit]:
             return 0
-        return 20
+        return self._get_effect(Effect.Crit)
 
     @property
     def has_crited(self):

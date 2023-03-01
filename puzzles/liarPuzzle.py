@@ -7,9 +7,23 @@ import pygame
 from loot.baseLoot import BaseLoot
 from puzzles.basePuzzle import BasePuzzle, PuzzleResult
 from utils.infoDisplay import generate_description
+from utils.singleton import Singleton
 from utils.utils import load_image
 
 names = ['Bob', 'Top', 'Rob']
+
+
+class LiarReader(metaclass=Singleton):
+    def __init__(self):
+        self.sets = []
+        self._read()
+
+    def _read(self):
+        with open(os.path.join('puzzles', 'liarSets.csv')) as f:
+            ls = []
+            for i in csv.reader(f):
+                ls.append(i)
+        self.sets = ls
 
 
 @dataclass(slots=True)
@@ -38,11 +52,7 @@ class LiarPuzzle(BasePuzzle):
         self.correct = None
 
     def read_sets(self, w, h):
-        with open(os.path.join('puzzles', 'liarSets.csv')) as f:
-            ls = []
-            for i in csv.reader(f):
-                ls.append(i)
-            ls = choice(ls)
+        ls = choice(LiarReader().sets)
         dx = w // 7
         for i, info in enumerate(ls[:3]):
             rct = pygame.Rect(w // 2 - dx * (2.5 - i * 2), h * 3 // 5, dx, dx)

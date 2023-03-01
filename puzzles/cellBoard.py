@@ -55,3 +55,10 @@ class CellBoard(ABC):
     @abstractmethod
     def render(self, surf):
         pass
+
+    def resize_to_fit(self, surf: pygame.Surface):
+        w, h = surf.get_size()
+        sz = min((w - 100) // self.width, (h - 100) // self.width)
+        bw = sz * self.width
+        bh = sz * self.height
+        self.set_view((w - bw) // 2, (h - bh) // 2, sz)
